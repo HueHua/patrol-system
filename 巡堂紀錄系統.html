@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>臺中二中 巡堂紀錄系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --text: #e8eaf0;
+    --text2: #8b90a7;
+    --border: #2d3148;
+    --radius: 14px;
+    --font: 'Noto Sans TC', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ── Top Nav ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 20px;
+    height: 56px;
+  }
+  .topbar-title {
+    font-size: 15px; font-weight: 700; letter-spacing: .5px;
+    flex: 1;
+  }
+  .topbar-title span { color: var(--accent); }
+
+  .tab-switch {
+    display: flex; gap: 4px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tab-btn {
+    border: none; cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: 7px;
+    transition: all .2s;
+    color: var(--text2); background: transparent;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(79,142,247,.4);
+  }
+
+  /* ── Pages ── */
+  .page { display: none; padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text2);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Form Elements ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--text2); margin-bottom: 6px; letter-spacing: .3px;
+  }
+  .field select, .field input[type=text], .field input[type=number], .field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color .2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .field select:focus, .field input:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,142,247,.15);
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── Violation Chips ── */
+  .chip-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .chip {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    transition: all .18s;
+    display: flex; align-items: flex-start; gap: 8px;
+    line-height: 1.4;
+    color: var(--text2);
+  }
+  .chip-code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--border);
+    padding: 1px 6px; border-radius: 4px;
+    color: var(--accent); flex-shrink: 0; margin-top: 1px;
+  }
+  .chip.selected {
+    border-color: var(--accent);
+    background: rgba(79,142,247,.12);
+    color: var(--text);
+  }
+  .chip.selected .chip-code { background: var(--accent); color: #fff; }
+
+  /* ── Submit Button ── */
+  .btn-submit {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: var(--radius);
+    color: #fff; font-family: var(--font);
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: .5px;
+    box-shadow: 0 4px 20px rgba(79,142,247,.35);
+    transition: all .2s; margin-top: 8px;
+  }
+  .btn-submit:active { transform: scale(.97); }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--success); color: #fff;
+    padding: 12px 24px; border-radius: 100px;
+    font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── Date display ── */
+  .date-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 14px; color: var(--text2);
+    margin-bottom: 16px; width: 100%; justify-content: center;
+  }
+  .date-badge strong { color: var(--text); font-weight: 600; }
+
+  /* ── Admin Page ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 28px; font-weight: 900;
+    font-family: var(--mono); color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  .record-list { display: flex; flex-direction: column; gap: 10px; }
+  .record-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .record-item::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--accent);
+  }
+  .record-item.has-violation::before { background: var(--warn); }
+  .record-meta {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .record-class { font-size: 16px; font-weight: 700; }
+  .record-time { font-size: 11px; font-family: var(--mono); color: var(--text2); }
+  .record-info { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .violation-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .vtag {
+    background: rgba(245,158,11,.15);
+    border: 1px solid rgba(245,158,11,.3);
+    color: var(--warn);
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    font-family: var(--mono);
+  }
+  .no-records {
+    text-align: center; padding: 48px 0;
+    color: var(--text2); font-size: 14px;
+  }
+  .no-records .icon { font-size: 40px; margin-bottom: 12px; }
+
+  .btn-export {
+    width: 100%; padding: 13px;
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    border-radius: 12px;
+    color: var(--accent); font-family: var(--font);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; letter-spacing: .3px;
+    transition: all .2s; margin-bottom: 12px;
+  }
+  .btn-export:active { background: rgba(79,142,247,.1); }
+
+  .btn-clear {
+    width: 100%; padding: 13px;
+    background: transparent;
+    border: 1.5px solid var(--danger);
+    border-radius: 12px;
+    color: var(--danger); font-family: var(--font);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; letter-spacing: .3px;
+    transition: all .2s;
+  }
+  .filter-row {
+    display: flex; gap: 8px; margin-bottom: 14px;
+  }
+  .filter-row select {
+    flex: 1; background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text); font-family: var(--font);
+    font-size: 13px; padding: 9px 12px;
+    outline: none; appearance: none;
+  }
+
+  /* password overlay */
+  .pw-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  .pw-overlay h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .pw-overlay p { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  .pw-overlay input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-size: 24px; font-family: var(--mono);
+    padding: 14px; text-align: center;
+    outline: none; letter-spacing: 8px; margin-bottom: 12px;
+  }
+  .pw-overlay .btn-submit { max-width: 200px; }
+  .pw-error { color: var(--danger); font-size: 13px; margin-top: 8px; display: none; }
+
+  .section-note {
+    font-size: 12px; color: var(--text2);
+    background: rgba(79,142,247,.08);
+    border: 1px solid rgba(79,142,247,.2);
+    border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 14px; line-height: 1.6;
+  }
+
+  /* pulse dot */
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    display: inline-block; margin-right: 6px;
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:.4; transform:scale(.8); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-title">臺中二中 <span>巡堂系統</span></div>
+  <div class="tab-switch">
+    <button class="tab-btn active" onclick="switchTab('form')">📋 填表</button>
+    <button class="tab-btn" onclick="switchTab('admin')">📊 後台</button>
+  </div>
+</div>
+
+<!-- ══════════ 填表頁 ══════════ -->
+<div id="page-form" class="page active">
+
+  <div id="conn-status" class="section-note" style="text-align:center;margin-bottom:12px;font-size:12px;font-weight:600">⚙ 檢查連線中…</div>
+
+  <div class="date-badge">
+    <span>📅</span>
+    <strong id="today-display"></strong>
+    <span id="weekday-display" style="color:var(--accent)"></span>
+  </div>
+
+  <!-- 巡堂人員 -->
+  <div class="card">
+    <div class="card-title">巡堂人員</div>
+    <div class="row2">
+      <div class="field">
+        <label>處室</label>
+        <select id="dept">
+          <option value="">選擇處室</option>
+          <option>教務處</option>
+          <option>學務處</option>
+          <option>總務處</option>
+          <option>輔導處</option>
+          <option>圖書館</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>職稱</label>
+        <select id="role">
+          <option value="">選擇職稱</option>
+          <option>主任</option>
+          <option>組長</option>
+          <option>幹事</option>
+          <option>其他</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>姓名</label>
+      <input type="text" id="patroller" placeholder="輸入姓名" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- 節次 -->
+  <div class="card">
+    <div class="card-title">巡堂節次</div>
+    <div class="row3">
+      <div class="field">
+        <label>年</label>
+        <input type="number" id="year" placeholder="114" min="110" max="120">
+      </div>
+      <div class="field">
+        <label>月</label>
+        <input type="number" id="month" placeholder="3" min="1" max="12">
+      </div>
+      <div class="field">
+        <label>日</label>
+        <input type="number" id="day" placeholder="27" min="1" max="31">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>節次</label>
+        <select id="period">
+          <option value="">選擇節次</option>
+          <option>第1節</option>
+          <option>第2節</option>
+          <option>第3節</option>
+          <option>第4節</option>
+          <option>第5節</option>
+          <option>第6節</option>
+          <option>第7節</option>
+          <option>第8節</option>
+          <option>午休</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>班級</label>
+        <input type="text" id="class-name" placeholder="例：高一忠" autocomplete="off">
+      </div>
+    </div>
+    <div class="field">
+      <label>任課老師</label>
+      <input type="text" id="teacher" placeholder="輸入老師姓名" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- 違規事項 -->
+  <div class="card">
+    <div class="card-title">紀錄代號</div>
+    <div class="section-note">可複選，點選適用項目。若有補充說明請填寫備註。</div>
+    <div class="chip-grid" id="violation-chips">
+      <div class="chip" data-code="A" onclick="toggleChip(this)">
+        <span class="chip-code">A</span><span>嬉鬧吵雜，課堂管理欠佳</span>
+      </div>
+      <div class="chip" data-code="B" onclick="toggleChip(this)">
+        <span class="chip-code">B</span><span>睡覺人數較多</span>
+      </div>
+      <div class="chip" data-code="C" onclick="toggleChip(this)">
+        <span class="chip-code">C</span><span>不當使用手機或3C產品</span>
+      </div>
+      <div class="chip" data-code="D" onclick="toggleChip(this)">
+        <span class="chip-code">D</span><span>教室或走廊髒亂</span>
+      </div>
+      <div class="chip" data-code="E" onclick="toggleChip(this)">
+        <span class="chip-code">E</span><span>室外課教室門窗未關</span>
+      </div>
+      <div class="chip" data-code="F" onclick="toggleChip(this)">
+        <span class="chip-code">F</span><span>室外課教室電源未關</span>
+      </div>
+      <div class="chip" data-code="G" onclick="toggleChip(this)">
+        <span class="chip-code">G</span><span>老師無故未到</span>
+      </div>
+      <div class="chip" data-code="OK" onclick="toggleChip(this)" style="border-color:rgba(16,185,129,.3);color:var(--text2)">
+        <span class="chip-code" style="color:var(--success)">✓</span><span>正常上課</span>
+      </div>
+    </div>
+
+    <!-- B特殊備註 -->
+    <div id="b-note" style="display:none; margin-top:12px;">
+      <div class="field">
+        <label>B：睡覺大概人數</label>
+        <input type="number" id="sleep-count" placeholder="例：5" min="1">
+      </div>
+    </div>
+    <!-- G特殊備註 -->
+    <div id="g-note" style="display:none; margin-top:0px;">
+      <div class="field">
+        <label>G：老師到幾點幾分（請即通知教學組）</label>
+        <input type="text" id="absent-time" placeholder="例：未到 / 10:15 到達">
+      </div>
+    </div>
+  </div>
+
+  <!-- 備註 -->
+  <div class="card">
+    <div class="card-title">備註說明</div>
+    <div class="field">
+      <textarea id="note" placeholder="其他補充說明（選填）"></textarea>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitRecord()">✉ 送出紀錄</button>
+</div>
+
+<!-- ══════════ 後台頁 ══════════ -->
+<div id="page-admin" class="page">
+
+  <!-- 密碼遮罩 -->
+  <div class="pw-overlay" id="pw-overlay">
+    <div style="font-size:36px;margin-bottom:12px">🔐</div>
+    <h2>後台管理</h2>
+    <p>請輸入教學組幹事密碼</p>
+    <input type="password" id="pw-input" maxlength="6" placeholder="● ● ● ●" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="btn-submit" onclick="checkPw()" style="cursor:pointer;text-align:center;padding:14px;border-radius:12px;width:100%">確認進入</div>
+    <div class="pw-error" id="pw-error">密碼錯誤，請再試一次</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:20px">預設密碼：1234</div>
+  </div>
+
+  <!-- 統計 -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">總筆數</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-violation" style="color:var(--warn)">0</div>
+      <div class="stat-label">有違規</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-today" style="color:var(--success)">0</div>
+      <div class="stat-label">今日筆數</div>
+    </div>
+  </div>
+
+  <button class="btn-export" onclick="exportCSV()">⬇ 匯出 CSV</button>
+
+  <div class="filter-row">
+    <select id="filter-date" onchange="renderAdmin()">
+      <option value="">全部日期</option>
+    </select>
+    <select id="filter-dept" onchange="renderAdmin()">
+      <option value="">全部處室</option>
+    </select>
+  </div>
+
+  <div class="card" style="padding:14px 16px;">
+    <div class="card-title">
+      <span class="live-dot"></span>即時紀錄
+    </div>
+    <div class="record-list" id="record-list">
+      <div class="no-records"><div class="icon">📭</div>尚無紀錄</div>
+    </div>
+  </div>
+
+  <button class="btn-clear" onclick="clearAll()">🗑 清除所有紀錄</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// ★ 設定區 — 貼上你的 Google Apps Script 網址
+// ══════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec'; // ← 貼在這裡，例如 'https://script.google.com/macros/s/XXXX/exec'
+
+const STORAGE_KEY = 'tc2hs_patrol_v2';
+const ADMIN_PW = '1234';
+
+// ── 判斷是否已設定 GAS ──────────────────────
+const hasGAS = () => GAS_URL && GAS_URL.startsWith('https://');
+
+// ── 本地資料（離線備用）────────────────────
+function getLocalRecords() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+function saveLocal(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// ── Date setup ────────────────────────────────
+const weekdays = ['日','一','二','三','四','五','六'];
+function todayROC() {
+  const d = new Date();
+  const roc = d.getFullYear() - 1911;
+  return { roc, m: d.getMonth()+1, d: d.getDate(), w: weekdays[d.getDay()] };
+}
+(function initDate(){
+  const t = todayROC();
+  document.getElementById('today-display').textContent = `民國 ${t.roc} 年 ${t.m} 月 ${t.d} 日`;
+  document.getElementById('weekday-display').textContent = `（星期${t.w}）`;
+  document.getElementById('year').value = t.roc;
+  document.getElementById('month').value = t.m;
+  document.getElementById('day').value = t.d;
+  // 顯示連線狀態
+  updateConnStatus();
+})();
+
+function updateConnStatus() {
+  const el = document.getElementById('conn-status');
+  if (!el) return;
+  if (hasGAS()) {
+    el.innerHTML = '☁ 已連接 Google Sheets，資料將同步至雲端';
+    el.style.color = 'var(--success)';
+    el.style.borderColor = 'rgba(16,185,129,.3)';
+    el.style.background = 'rgba(16,185,129,.07)';
+  } else {
+    el.innerHTML = '⚠ 尚未設定 Google Sheets — 資料僅存本機';
+    el.style.color = 'var(--warn)';
+    el.style.borderColor = 'rgba(245,158,11,.3)';
+    el.style.background = 'rgba(245,158,11,.07)';
+  }
+}
+
+// ── Tab switch ────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab === 'admin') renderAdmin();
+}
+
+// ── Chips ─────────────────────────────────────
+function toggleChip(el) {
+  el.classList.toggle('selected');
+  const bSelected = !!document.querySelector('[data-code="B"].selected');
+  const gSelected = !!document.querySelector('[data-code="G"].selected');
+  document.getElementById('b-note').style.display = bSelected ? 'block' : 'none';
+  document.getElementById('g-note').style.display = gSelected ? 'block' : 'none';
+}
+
+// ── Submit ────────────────────────────────────
+async function submitRecord() {
+  const dept = document.getElementById('dept').value;
+  const role = document.getElementById('role').value;
+  const patroller = document.getElementById('patroller').value.trim();
+  const year = document.getElementById('year').value;
+  const month = document.getElementById('month').value;
+  const day = document.getElementById('day').value;
+  const period = document.getElementById('period').value;
+  const className = document.getElementById('class-name').value.trim();
+  const teacher = document.getElementById('teacher').value.trim();
+
+  if (!patroller || !period || !className) {
+    showToast('⚠ 請填寫姓名、節次與班級', '#ef4444');
+    return;
+  }
+
+  const selected = [...document.querySelectorAll('.chip.selected')].map(c => c.dataset.code);
+  const sleepCount = document.getElementById('sleep-count').value;
+  const absentTime = document.getElementById('absent-time').value.trim();
+  const note = document.getElementById('note').value.trim();
+
+  const rec = {
+    id: Date.now(),
+    ts: new Date().toISOString(),
+    dept, role, patroller,
+    year: String(year), month: String(month), day: String(day),
+    dateStr: `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`,
+    period, className, teacher,
+    violations: selected,
+    sleepCount: selected.includes('B') ? sleepCount : '',
+    absentTime: selected.includes('G') ? absentTime : '',
+    note
+  };
+
+  // 1. 先存本地（離線保險）
+  const arr = getLocalRecords();
+  arr.unshift(rec);
+  saveLocal(arr);
+
+  // 2. 送出至 Google Sheets（若已設定）
+  const btn = document.querySelector('.btn-submit');
+  if (hasGAS()) {
+    btn.disabled = true;
+    btn.textContent = '☁ 同步中…';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rec)
+      });
+      showToast('✓ 已送出並同步至 Google Sheets！');
+    } catch(e) {
+      showToast('✓ 已儲存（雲端同步失敗，資料保存在本機）', '#f59e0b');
+    }
+    btn.disabled = false;
+    btn.textContent = '✉ 送出紀錄';
+  } else {
+    showToast('✓ 紀錄已儲存（本機）');
+  }
+
+  resetForm();
+}
+
+function resetForm() {
+  document.getElementById('class-name').value = '';
+  document.getElementById('teacher').value = '';
+  document.getElementById('note').value = '';
+  document.getElementById('sleep-count').value = '';
+  document.getElementById('absent-time').value = '';
+  document.getElementById('period').value = '';
+  document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
+  document.getElementById('b-note').style.display = 'none';
+  document.getElementById('g-note').style.display = 'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Toast ─────────────────────────────────────
+function showToast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg || '#10b981';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Admin Password ────────────────────────────
+let adminUnlocked = false;
+function checkPw() {
+  const v = document.getElementById('pw-input').value;
+  if (v === ADMIN_PW) {
+    adminUnlocked = true;
+    document.getElementById('pw-overlay').style.display = 'none';
+    renderAdmin();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    setTimeout(() => document.getElementById('pw-error').style.display='none', 2000);
+  }
+}
+
+// ── Render Admin ──────────────────────────────
+async function renderAdmin() {
+  if (!adminUnlocked) return;
+
+  let records = [];
+
+  if (hasGAS()) {
+    // 從 Google Sheets 抓資料
+    document.getElementById('record-list').innerHTML = '<div class="no-records"><div class="icon">☁</div>從雲端載入中…</div>';
+    try {
+      const res = await fetch(GAS_URL + '?action=getAll');
+      const json = await res.json();
+      records = json.records || [];
+      // 同步更新本地快取
+      saveLocal(records);
+    } catch(e) {
+      // 雲端失敗，退回本地
+      records = getLocalRecords();
+      showToast('⚠ 雲端讀取失敗，顯示本機資料', '#f59e0b');
+    }
+  } else {
+    records = getLocalRecords();
+  }
+
+  const filterDate = document.getElementById('filter-date').value;
+  const filterDept = document.getElementById('filter-dept').value;
+
+  const dates = [...new Set(records.map(r => r.dateStr))].sort().reverse();
+  const depts = [...new Set(records.map(r => r.dept).filter(Boolean))];
+  updateFilter('filter-date', dates, filterDate);
+  updateFilter('filter-dept', depts, filterDept);
+
+  const filtered = records.filter(r =>
+    (!filterDate || r.dateStr === filterDate) &&
+    (!filterDept || r.dept === filterDept)
+  );
+
+  const todayStr = (() => {
+    const t = todayROC();
+    return `${t.roc}/${t.m.toString().padStart(2,'0')}/${t.d.toString().padStart(2,'0')}`;
+  })();
+  document.getElementById('stat-total').textContent = records.length;
+  document.getElementById('stat-violation').textContent = records.filter(r => r.violations && r.violations.length && !r.violations.every(v=>v==='OK')).length;
+  document.getElementById('stat-today').textContent = records.filter(r => r.dateStr === todayStr).length;
+
+  const list = document.getElementById('record-list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>';
+    return;
+  }
+
+  const violCodes = { A:'嬉鬧吵雜', B:'睡覺較多', C:'3C違規', D:'環境髒亂', E:'門窗未關', F:'電源未關', G:'老師缺席', OK:'正常上課' };
+
+  list.innerHTML = filtered.map(r => {
+    const viols = Array.isArray(r.violations) ? r.violations : (r.violations||'').split('+').filter(Boolean);
+    const hasV = viols.length && !viols.every(v=>v==='OK');
+    const time = r.ts ? new Date(r.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}) : '';
+    const tags = viols.map(v => `<span class="vtag">${v}${violCodes[v]?'·'+violCodes[v]:''}</span>`).join('');
+    const notes = [];
+    if (r.sleepCount) notes.push(`睡覺約${r.sleepCount}人`);
+    if (r.absentTime) notes.push(`老師：${r.absentTime}`);
+    if (r.note) notes.push(r.note);
+
+    return `<div class="record-item ${hasV?'has-violation':''}">
+      <div class="record-meta">
+        <div>
+          <div class="record-class">${r.period||''}｜${r.className||''}</div>
+          <div class="record-info">${r.dateStr||''} · 任課：${r.teacher||'—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="record-time">${time}</div>
+          <div class="record-info">${r.dept||''} ${r.role||''} ${r.patroller||''}</div>
+        </div>
+      </div>
+      ${tags ? `<div class="violation-tags">${tags}</div>` : ''}
+      ${notes.length ? `<div style="font-size:12px;color:var(--text2);margin-top:6px">${notes.join('｜')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function updateFilter(id, options, current) {
+  const sel = document.getElementById(id);
+  const first = sel.options[0].outerHTML;
+  sel.innerHTML = first + options.map(o => `<option ${o===current?'selected':''}>${o}</option>`).join('');
+}
+
+// ── Export CSV ────────────────────────────────
+function exportCSV() {
+  const records = getLocalRecords();
+  if (!records.length) { showToast('⚠ 尚無資料可匯出', '#f59e0b'); return; }
+  const headers = ['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','送出時間'];
+  const rows = records.map(r => {
+    const viols = Array.isArray(r.violations) ? r.violations.join('+') : (r.violations||'');
+    return [
+      r.dateStr, r.period, r.className, r.teacher,
+      r.dept, r.role, r.patroller, viols,
+      r.sleepCount, r.absentTime, r.note,
+      r.ts ? new Date(r.ts).toLocaleString('zh-TW') : ''
+    ].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',');
+  });
+
+  const bom = '\uFEFF';
+  const csv = bom + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `巡堂紀錄_${new Date().toLocaleDateString('zh-TW')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Clear ─────────────────────────────────────
+function clearAll() {
+  if (confirm('確定要清除本機快取嗎？（Google Sheets 的資料不受影響）')) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderAdmin();
+    showToast('已清除本機快取', '#6b7280');
+  }
+}
+</script>
+</body>
+</html>
