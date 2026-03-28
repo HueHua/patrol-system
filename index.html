@@ -484,7 +484,7 @@
     <input type="password" id="pw-input" maxlength="6" placeholder="● ● ● ●" onkeydown="if(event.key==='Enter')checkPw()">
     <div class="btn-submit" onclick="checkPw()" style="cursor:pointer;text-align:center;padding:14px;border-radius:12px;width:100%">確認進入</div>
     <div class="pw-error" id="pw-error">密碼錯誤，請再試一次</div>
-    <div style="font-size:11px;color:var(--text2);margin-top:20px">預設密碼：1234</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:20px">請洽教學組幹事取得密碼</div>
   </div>
 
   <!-- 統計 -->
@@ -532,10 +532,10 @@
 // ══════════════════════════════════════════════
 // ★ 設定區 — 貼上你的 Google Apps Script 網址
 // ══════════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec'; // ← 貼在這裡，例如 'https://script.google.com/macros/s/XXXX/exec'
+const GAS_URL = ''; // ← 貼在這裡，例如 'https://script.google.com/macros/s/XXXX/exec'
 
 const STORAGE_KEY = 'tc2hs_patrol_v2';
-const ADMIN_PW = '1234';
+const ADMIN_PW = 'A1204';
 
 // ── 判斷是否已設定 GAS ──────────────────────
 const hasGAS = () => GAS_URL && GAS_URL.startsWith('https://');
