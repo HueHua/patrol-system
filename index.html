@@ -5,6 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>臺中二中 巡堂紀錄系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- 班級列模板 -->
+<template id="tpl-row">
+  <div class="class-row">
+    <div class="class-row-header">
+      <span class="class-row-num"></span>
+      <div class="row-actions">
+        <button class="btn-send-one">↑ 立即送出</button>
+        <button class="btn-remove">✕</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>班級名稱</label><input type="text" class="f-class" placeholder="例：高一忠" autocomplete="off"></div>
+      <div class="field"><label>任課老師</label><input type="text" class="f-teacher" placeholder="老師姓名" autocomplete="off"></div>
+    </div>
+    <label class="chip-label">紀錄代號（可複選）</label>
+    <div class="chip-grid">
+      <div class="chip" data-code="A"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
+      <div class="chip" data-code="B"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
+      <div class="chip" data-code="C"><span class="chip-code">C</span><span>不當使用手機/3C</span></div>
+      <div class="chip" data-code="D"><span class="chip-code">D</span><span>教室走廊髒亂</span></div>
+      <div class="chip" data-code="E"><span class="chip-code">E</span><span>室外課門窗未關</span></div>
+      <div class="chip" data-code="F"><span class="chip-code">F</span><span>室外課電源未關</span></div>
+      <div class="chip" data-code="G"><span class="chip-code">G</span><span>老師無故未到</span></div>
+      <div class="chip chip-ok" data-code="OK"><span class="chip-code ok-code">✓</span><span>正常上課</span></div>
+    </div>
+    <div class="extra-b" style="display:none">
+      <div class="field" style="margin-top:10px"><label>B：睡覺大約人數</label><input type="number" class="f-sleep" placeholder="例：5" min="1"></div>
+    </div>
+    <div class="extra-g" style="display:none">
+      <div class="field"><label>G：老師到幾點幾分</label><input type="text" class="f-absent" placeholder="例：未到 / 10:15 到達"></div>
+    </div>
+    <div class="field" style="margin-top:10px;margin-bottom:0">
+      <label>備註（選填）</label>
+      <textarea class="f-note" placeholder="其他補充說明"></textarea>
+    </div>
+    <div class="photo-upload">
+      <label class="photo-label">
+        <span>📷</span><span>拍照或上傳照片（選填）</span>
+        <input type="file" class="f-photo" accept="image/*">
+      </label>
+      <div class="photo-preview" style="display:none">
+        <img class="preview-img" src="" alt="">
+        <button class="photo-remove" type="button">✕</button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style>
   :root{
     --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
@@ -62,9 +111,11 @@
   .btn-remove{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;transition:color .15s}
   .btn-remove:hover{color:var(--danger)}
 
-  .chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+  .chip-label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:8px}
+  .chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
   .chip{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:flex;align-items:flex-start;gap:6px;line-height:1.4;color:var(--text2)}
   .chip-code{font-family:var(--mono);font-size:10px;background:var(--border);padding:1px 5px;border-radius:3px;color:var(--accent);flex-shrink:0;margin-top:1px}
+  .ok-code{color:var(--success)}
   .chip.selected{border-color:var(--accent);background:rgba(79,142,247,.12);color:var(--text)}
   .chip.selected .chip-code{background:var(--accent);color:#fff}
   .chip-ok.selected{border-color:var(--success)!important;background:rgba(16,185,129,.1)!important}
@@ -74,9 +125,9 @@
   .photo-label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2)}
   .photo-label:hover{border-color:var(--accent);color:var(--accent)}
   .photo-label input[type=file]{display:none}
-  .photo-preview{margin-top:8px;position:relative;display:none}
-  .photo-preview img{width:100%;border-radius:8px;border:1px solid var(--border);max-height:180px;object-fit:cover}
-  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .photo-preview{margin-top:8px;position:relative}
+  .photo-preview .preview-img{width:100%;border-radius:8px;border:1px solid var(--border);max-height:180px;object-fit:cover}
+  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;line-height:24px;text-align:center}
 
   .btn-add-class{width:100%;padding:13px;border:1.5px dashed var(--border);background:transparent;border-radius:12px;color:var(--text2);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px}
   .btn-add-class:hover{border-color:var(--accent);color:var(--accent)}
@@ -98,10 +149,8 @@
   .btn-export{flex:1;padding:13px;background:transparent;border:1.5px solid var(--accent);border-radius:12px;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
   .btn-supplement{flex:1;padding:13px;background:rgba(79,142,247,.1);border:1.5px solid var(--accent);border-radius:12px;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
 
-  /* 補充面板 */
   .supplement-panel{display:none;background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:14px}
   .supplement-panel.open{display:block}
-  .supplement-panel .card-title{color:var(--accent);margin-bottom:12px}
 
   .filter-row{display:flex;gap:8px;margin-bottom:12px}
   .filter-row select{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;appearance:none}
@@ -111,7 +160,6 @@
   .record-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
   .record-item.has-violation::before{background:var(--warn)}
   .record-item.editing{border-color:var(--accent)}
-
   .record-meta{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
   .record-class{font-size:15px;font-weight:700}
   .record-time{font-size:11px;font-family:var(--mono);color:var(--text2)}
@@ -122,9 +170,8 @@
   .vtag.supp{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.3);color:var(--accent)}
 
   .record-btns{display:flex;gap:6px;margin-top:8px}
-  .btn-edit-rec{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text2);background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
+  .btn-edit-rec,.btn-del-rec{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text2);background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
   .btn-edit-rec:hover{border-color:var(--accent);color:var(--accent)}
-  .btn-del-rec{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text2);background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
   .btn-del-rec:hover{border-color:var(--danger);color:var(--danger)}
 
   .edit-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
@@ -139,16 +186,15 @@
   .btn-save-edit{flex:1;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
   .btn-cancel-edit{flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:var(--font);font-size:13px;cursor:pointer}
 
-  .photo-thumb a{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px}
+  .photo-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px}
   .no-records{text-align:center;padding:48px 0;color:var(--text2);font-size:14px}
   .no-records .icon{font-size:36px;margin-bottom:10px}
   .btn-clear{width:100%;padding:13px;background:transparent;border:1.5px solid var(--danger);border-radius:12px;color:var(--danger);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:5px;animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 
-  /* 補充班級的 chip-grid（在補充面板裡） */
   .supp-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;margin-bottom:10px}
-  .supp-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:flex;align-items:flex-start;gap:6px;line-height:1.4;color:var(--text2)}
+  .supp-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:flex-start;gap:6px;line-height:1.4;color:var(--text2);transition:all .15s}
   .supp-chip.selected{border-color:var(--accent);background:rgba(79,142,247,.12);color:var(--text)}
   .supp-chip.selected .chip-code{background:var(--accent);color:#fff}
   .supp-chip.ok-chip.selected{border-color:var(--success)!important;background:rgba(16,185,129,.1)!important}
@@ -160,12 +206,12 @@
 <div class="topbar">
   <div class="topbar-title">臺中二中 <span>巡堂系統</span></div>
   <div class="tab-switch">
-    <button class="tab-btn active" onclick="switchTab('form',this)">📋 填表</button>
-    <button class="tab-btn" onclick="switchTab('admin',this)">📊 後台</button>
+    <button class="tab-btn active" id="tab-form">📋 填表</button>
+    <button class="tab-btn" id="tab-admin">📊 後台</button>
   </div>
 </div>
 
-<!-- ══════ 填表頁 ══════ -->
+<!-- 填表頁 -->
 <div id="page-form" class="page active">
   <div id="conn-status" class="conn-badge">⚙ 檢查連線中…</div>
   <div class="date-badge">
@@ -193,7 +239,11 @@
       <div class="field"><label>日</label><input type="number" id="day" min="1" max="31"></div>
     </div>
     <div class="field"><label>節次</label>
-      <select id="period"><option value="">選擇節次</option><option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option><option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option></select>
+      <select id="period">
+        <option value="">選擇節次</option>
+        <option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option>
+        <option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option>
+      </select>
     </div>
   </div>
 
@@ -206,37 +256,33 @@
       <span class="count" id="class-count">0</span><span class="label">班已登記</span>
     </div>
     <div class="class-list" id="class-list"></div>
-    <button class="btn-add-class" onclick="addClassRow()">＋ 新增班級</button>
+    <button class="btn-add-class" id="btn-add-class">＋ 新增班級</button>
   </div>
-  <button class="btn-submit" id="submit-btn" onclick="submitAll()">✉ 全部送出</button>
+  <button class="btn-submit" id="submit-btn">✉ 全部送出</button>
 </div>
 
-<!-- ══════ 後台頁 ══════ -->
+<!-- 後台頁 -->
 <div id="page-admin" class="page">
-
   <div class="stats-row">
     <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總班次</div></div>
     <div class="stat-box"><div class="stat-num" id="stat-violation" style="color:var(--warn)">0</div><div class="stat-label">有違規</div></div>
     <div class="stat-box"><div class="stat-num" id="stat-today" style="color:var(--success)">0</div><div class="stat-label">今日班次</div></div>
   </div>
-
   <div class="admin-actions">
-    <button class="btn-export" onclick="exportCSV()">⬇ 匯出 CSV</button>
-    <button class="btn-supplement" onclick="toggleSupp()">＋ 補充漏填班級</button>
+    <button class="btn-export" id="btn-export">⬇ 匯出 CSV</button>
+    <button class="btn-supplement" id="btn-supp-toggle">＋ 補充漏填班級</button>
   </div>
 
-  <!-- 補充漏填面板 -->
+  <!-- 補充面板 -->
   <div class="supplement-panel" id="supp-panel">
-    <div class="card-title">補充漏填班級</div>
+    <div class="card-title" style="color:var(--accent)">補充漏填班級</div>
     <div class="row2" style="margin-bottom:10px">
-      <div class="field"><label>選擇日期</label>
-        <select id="supp-date"><option value="">選擇日期</option></select>
-      </div>
+      <div class="field"><label>選擇日期</label><select id="supp-date"><option value="">選擇日期</option></select></div>
       <div class="field"><label>選擇節次</label>
         <select id="supp-period"><option value="">選擇節次</option><option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option><option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option></select>
       </div>
     </div>
-    <div id="supp-session-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;display:none"></div>
+    <div id="supp-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;display:none"></div>
     <div class="row2">
       <div class="field"><label>班級名稱</label><input type="text" id="supp-class" placeholder="例：高一忠" autocomplete="off"></div>
       <div class="field"><label>任課老師</label><input type="text" id="supp-teacher" placeholder="老師姓名" autocomplete="off"></div>
@@ -249,415 +295,556 @@
     </div>
     <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">紀錄代號</label>
     <div class="supp-chip-grid" id="supp-chips">
-      <div class="supp-chip" data-code="A" onclick="this.classList.toggle('selected')"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
-      <div class="supp-chip" data-code="B" onclick="this.classList.toggle('selected')"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
-      <div class="supp-chip" data-code="C" onclick="this.classList.toggle('selected')"><span class="chip-code">C</span><span>不當使用手機/3C</span></div>
-      <div class="supp-chip" data-code="D" onclick="this.classList.toggle('selected')"><span class="chip-code">D</span><span>教室走廊髒亂</span></div>
-      <div class="supp-chip" data-code="E" onclick="this.classList.toggle('selected')"><span class="chip-code">E</span><span>室外課門窗未關</span></div>
-      <div class="supp-chip" data-code="F" onclick="this.classList.toggle('selected')"><span class="chip-code">F</span><span>室外課電源未關</span></div>
-      <div class="supp-chip" data-code="G" onclick="this.classList.toggle('selected')"><span class="chip-code">G</span><span>老師無故未到</span></div>
-      <div class="supp-chip ok-chip" data-code="OK" onclick="this.classList.toggle('selected')"><span class="chip-code" style="color:var(--success)">✓</span><span>正常上課</span></div>
+      <div class="supp-chip" data-code="A"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
+      <div class="supp-chip" data-code="B"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
+      <div class="supp-chip" data-code="C"><span class="chip-code">C</span><span>不當使用手機/3C</span></div>
+      <div class="supp-chip" data-code="D"><span class="chip-code">D</span><span>教室走廊髒亂</span></div>
+      <div class="supp-chip" data-code="E"><span class="chip-code">E</span><span>室外課門窗未關</span></div>
+      <div class="supp-chip" data-code="F"><span class="chip-code">F</span><span>室外課電源未關</span></div>
+      <div class="supp-chip" data-code="G"><span class="chip-code">G</span><span>老師無故未到</span></div>
+      <div class="supp-chip ok-chip" data-code="OK"><span class="chip-code" style="color:var(--success)">✓</span><span>正常上課</span></div>
     </div>
     <div class="field"><label>備註（選填）</label><textarea id="supp-note" placeholder="其他補充說明"></textarea></div>
     <div class="edit-actions">
-      <button class="btn-cancel-edit" onclick="toggleSupp()">取消</button>
-      <button class="btn-save-edit" onclick="submitSupp()">送出補充紀錄</button>
+      <button class="btn-cancel-edit" id="btn-supp-cancel">取消</button>
+      <button class="btn-save-edit" id="btn-supp-submit">送出補充紀錄</button>
     </div>
   </div>
 
   <div class="filter-row">
-    <select id="filter-date" onchange="renderAdmin()"><option value="">全部日期</option></select>
-    <select id="filter-dept" onchange="renderAdmin()"><option value="">全部處室</option></select>
+    <select id="filter-date"><option value="">全部日期</option></select>
+    <select id="filter-dept"><option value="">全部處室</option></select>
   </div>
-
   <div class="card" style="padding:13px 15px;">
     <div class="card-title"><span class="live-dot"></span>巡堂紀錄</div>
     <div class="record-list" id="record-list"><div class="no-records"><div class="icon">📭</div>尚無紀錄</div></div>
   </div>
-  <button class="btn-clear" onclick="clearAll()">🗑 清除本機快取</button>
+  <button class="btn-clear" id="btn-clear">🗑 清除本機快取</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+'use strict';
+
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec';
-const STORAGE_KEY = 'tc2hs_patrol_v5';
-const hasGAS = () => GAS_URL && GAS_URL.startsWith('https://');
-function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch{ return []; } }
+const STORAGE_KEY = 'tc2hs_v6';
+const hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
+function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
 
-const WD=['日','一','二','三','四','五','六'];
-function todayROC(){ const d=new Date(); return {roc:d.getFullYear()-1911,m:d.getMonth()+1,d:d.getDate(),w:WD[d.getDay()]}; }
+// ── 日期 ──────────────────────────────────────
+var WD=['日','一','二','三','四','五','六'];
+function todayROC(){ var d=new Date(); return {roc:d.getFullYear()-1911, m:d.getMonth()+1, d:d.getDate(), w:WD[d.getDay()]}; }
+function pad(n){ return String(n).padStart(2,'0'); }
 
-(function init(){
-  const t=todayROC();
-  document.getElementById('today-display').textContent=`民國 ${t.roc} 年 ${t.m} 月 ${t.d} 日`;
-  document.getElementById('weekday-display').textContent=`（星期${t.w}）`;
-  document.getElementById('year').value=t.roc;
-  document.getElementById('month').value=t.m;
-  document.getElementById('day').value=t.d;
+// ── 初始化 ────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  var t = todayROC();
+  document.getElementById('today-display').textContent = '民國 '+t.roc+' 年 '+t.m+' 月 '+t.d+' 日';
+  document.getElementById('weekday-display').textContent = '（星期'+t.w+'）';
+  document.getElementById('year').value = t.roc;
+  document.getElementById('month').value = t.m;
+  document.getElementById('day').value = t.d;
+
   updateConnStatus();
   addClassRow();
-})();
+
+  // 按鈕事件
+  document.getElementById('tab-form').addEventListener('click', function(){ switchTab('form'); });
+  document.getElementById('tab-admin').addEventListener('click', function(){ switchTab('admin'); });
+  document.getElementById('btn-add-class').addEventListener('click', addClassRow);
+  document.getElementById('submit-btn').addEventListener('click', submitAll);
+  document.getElementById('btn-export').addEventListener('click', exportCSV);
+  document.getElementById('btn-clear').addEventListener('click', clearAll);
+  document.getElementById('btn-supp-toggle').addEventListener('click', toggleSupp);
+  document.getElementById('btn-supp-cancel').addEventListener('click', toggleSupp);
+  document.getElementById('btn-supp-submit').addEventListener('click', submitSupp);
+  document.getElementById('filter-date').addEventListener('change', renderAdmin);
+  document.getElementById('filter-dept').addEventListener('change', renderAdmin);
+  document.getElementById('supp-date').addEventListener('change', updateSuppInfo);
+  document.getElementById('supp-period').addEventListener('change', updateSuppInfo);
+
+  // 補充面板 chips
+  document.querySelectorAll('#supp-chips .supp-chip').forEach(function(c){
+    c.addEventListener('click', function(){ c.classList.toggle('selected'); });
+  });
+});
 
 function updateConnStatus(){
-  const el=document.getElementById('conn-status');
+  var el = document.getElementById('conn-status');
   if(hasGAS()){
     el.textContent='☁ 已連接 Google Sheets，資料同步至雲端';
-    el.style.color='var(--success)';el.style.borderColor='rgba(16,185,129,.3)';el.style.background='rgba(16,185,129,.07)';
+    el.style.color='var(--success)'; el.style.borderColor='rgba(16,185,129,.3)'; el.style.background='rgba(16,185,129,.07)';
   }else{
     el.textContent='⚠ 尚未設定 Google Sheets — 資料僅存本機';
-    el.style.color='var(--warn)';el.style.borderColor='rgba(245,158,11,.3)';el.style.background='rgba(245,158,11,.07)';
+    el.style.color='var(--warn)'; el.style.borderColor='rgba(245,158,11,.3)'; el.style.background='rgba(245,158,11,.07)';
   }
 }
 
-function switchTab(tab,btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+// ── Tab ───────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('page-form').classList.remove('active');
+  document.getElementById('page-admin').classList.remove('active');
+  document.getElementById('tab-form').classList.remove('active');
+  document.getElementById('tab-admin').classList.remove('active');
   document.getElementById('page-'+tab).classList.add('active');
-  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='admin') renderAdmin();
 }
 
-// ── 填表 ──────────────────────────────────────
-let rowId=0;
+// ── 班級列（用 template，不用 innerHTML） ─────
+var rowId = 0;
+
 function addClassRow(){
-  rowId++;const id=rowId;
-  const div=document.createElement('div');
-  div.className='class-row';div.dataset.id=id;
-  div.innerHTML=`
-    <div class="class-row-header">
-      <span class="class-row-num">班級 ${id}</span>
-      <div class="row-actions">
-        <button class="btn-send-one" id="send-one-${id}" data-rid="${id}" onclick="sendOne(this.dataset.rid)">↑ 立即送出</button>
-        <button class="btn-remove" data-rid="${id}" onclick="removeRow(this.dataset.rid)">✕</button>
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>班級名稱</label><input type="text" class="f-class" placeholder="例：高一忠" autocomplete="off"></div>
-      <div class="field"><label>任課老師</label><input type="text" class="f-teacher" placeholder="老師姓名" autocomplete="off"></div>
-    </div>
-    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">紀錄代號（可複選）</label>
-    <div class="chip-grid">
-      <div class="chip" data-code="A" onclick="toggleChip(this)"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
-      <div class="chip" data-code="B" onclick="toggleChip(this)"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
-      <div class="chip" data-code="C" onclick="toggleChip(this)"><span class="chip-code">C</span><span>不當使用手機/3C</span></div>
-      <div class="chip" data-code="D" onclick="toggleChip(this)"><span class="chip-code">D</span><span>教室走廊髒亂</span></div>
-      <div class="chip" data-code="E" onclick="toggleChip(this)"><span class="chip-code">E</span><span>室外課門窗未關</span></div>
-      <div class="chip" data-code="F" onclick="toggleChip(this)"><span class="chip-code">F</span><span>室外課電源未關</span></div>
-      <div class="chip" data-code="G" onclick="toggleChip(this)"><span class="chip-code">G</span><span>老師無故未到</span></div>
-      <div class="chip chip-ok" data-code="OK" onclick="toggleChip(this)"><span class="chip-code" style="color:var(--success)">✓</span><span>正常上課</span></div>
-    </div>
-    <div class="extra-b" style="display:none;margin-top:10px">
-      <div class="field"><label>B：睡覺大約人數</label><input type="number" class="f-sleep" placeholder="例：5" min="1"></div>
-    </div>
-    <div class="extra-g" style="display:none">
-      <div class="field"><label>G：老師到幾點幾分</label><input type="text" class="f-absent" placeholder="例：未到 / 10:15 到達"></div>
-    </div>
-    <div class="field" style="margin-top:10px;margin-bottom:0">
-      <label>備註（選填）</label><textarea class="f-note" placeholder="其他補充說明"></textarea>
-    </div>
-    <div class="photo-upload">
-      <label class="photo-label">
-        <span>📷</span><span>拍照或上傳照片（選填）</span>
-        <input type="file" class="f-photo" accept="image/*" onchange="previewPhoto(this,${id})">
-      </label>
-      <div class="photo-preview" id="preview-${id}">
-        <img id="preview-img-${id}" src="" alt="">
-        <button class="photo-remove" data-rid="${id}" onclick="removePhoto(this.dataset.rid)">✕</button>
-      </div>
-    </div>`;
-  document.getElementById('class-list').appendChild(div);
+  rowId++;
+  var id = rowId;
+  var tpl = document.getElementById('tpl-row');
+  var clone = tpl.content.cloneNode(true);
+  var row = clone.querySelector('.class-row');
+
+  row.dataset.id = id;
+  row.querySelector('.class-row-num').textContent = '班級 ' + id;
+
+  // 按鈕
+  var btnSend = row.querySelector('.btn-send-one');
+  btnSend.id = 'send-one-' + id;
+  btnSend.addEventListener('click', function(){ sendOne(id); });
+
+  var btnRemove = row.querySelector('.btn-remove');
+  btnRemove.addEventListener('click', function(){ removeRow(id); });
+
+  // chips
+  row.querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){ toggleChip(chip, row); });
+  });
+
+  // 照片
+  var photoInput = row.querySelector('.f-photo');
+  var photoPreview = row.querySelector('.photo-preview');
+  var previewImg = row.querySelector('.preview-img');
+  var photoRemove = row.querySelector('.photo-remove');
+
+  photoInput.addEventListener('change', function(){
+    var file = photoInput.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      previewImg.src = e.target.result;
+      photoPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  photoRemove.addEventListener('click', function(){
+    photoInput.value = '';
+    previewImg.src = '';
+    photoPreview.style.display = 'none';
+  });
+
+  document.getElementById('class-list').appendChild(row);
   updateCount();
-  setTimeout(()=>div.scrollIntoView({behavior:'smooth',block:'center'}),100);
+  setTimeout(function(){ row.scrollIntoView({behavior:'smooth', block:'center'}); }, 100);
 }
 
 function removeRow(id){
-  if(document.querySelectorAll('.class-row').length<=1){showToast('⚠ 至少保留一個班級','#f59e0b');return;}
-  document.querySelector(`.class-row[data-id="${id}"]`)?.remove();updateCount();
+  var rows = document.querySelectorAll('.class-row');
+  if(rows.length<=1){ showToast('⚠ 至少保留一個班級','#f59e0b'); return; }
+  var row = document.querySelector('.class-row[data-id="'+id+'"]');
+  if(row) row.remove();
+  updateCount();
 }
-function updateCount(){ document.getElementById('class-count').textContent=document.querySelectorAll('.class-row').length; }
-function toggleChip(el){
-  el.classList.toggle('selected');
-  const row=el.closest('.class-row');
-  row.querySelector('.extra-b').style.display=row.querySelector('[data-code="B"].selected')?'block':'none';
-  row.querySelector('.extra-g').style.display=row.querySelector('[data-code="G"].selected')?'block':'none';
+
+function updateCount(){
+  document.getElementById('class-count').textContent = document.querySelectorAll('.class-row').length;
 }
-function previewPhoto(input,id){
-  const file=input.files[0];if(!file)return;
-  const r=new FileReader();r.onload=e=>{document.getElementById(`preview-img-${id}`).src=e.target.result;document.getElementById(`preview-${id}`).style.display='block';};r.readAsDataURL(file);
+
+function toggleChip(chip, row){
+  chip.classList.toggle('selected');
+  var bOn = row.querySelector('[data-code="B"].selected');
+  var gOn = row.querySelector('[data-code="G"].selected');
+  row.querySelector('.extra-b').style.display = bOn ? 'block' : 'none';
+  row.querySelector('.extra-g').style.display = gOn ? 'block' : 'none';
 }
-function removePhoto(id){
-  document.querySelector(`.class-row[data-id="${id}"] .f-photo`).value='';
-  document.getElementById(`preview-${id}`).style.display='none';
-  document.getElementById(`preview-img-${id}`).src='';
-}
+
+// ── 取得資料 ──────────────────────────────────
 function getBaseInfo(){
-  const y=document.getElementById('year').value,m=document.getElementById('month').value,d=document.getElementById('day').value;
-  return {patroller:document.getElementById('patroller').value.trim(),dept:document.getElementById('dept').value,role:document.getElementById('role').value,year:String(y),month:String(m),day:String(d),period:document.getElementById('period').value,dateStr:`${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`};
+  var y = document.getElementById('year').value;
+  var m = document.getElementById('month').value;
+  var d = document.getElementById('day').value;
+  return {
+    patroller: document.getElementById('patroller').value.trim(),
+    dept: document.getElementById('dept').value,
+    role: document.getElementById('role').value,
+    year: String(y), month: String(m), day: String(d),
+    period: document.getElementById('period').value,
+    dateStr: y+'/'+pad(m)+'/'+pad(d)
+  };
 }
-async function buildRecord(row,base){
-  const violations=[...row.querySelectorAll('.chip.selected')].map(c=>c.dataset.code);
-  const pi=row.querySelector('.f-photo');
-  let pb='',pm='',pn='';
-  if(pi.files[0]){const f=pi.files[0];pm=f.type;pn=f.name;pb=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.readAsDataURL(f);});}
-  return {...base,id:Date.now()+Math.random(),ts:new Date().toISOString(),className:row.querySelector('.f-class').value.trim(),teacher:row.querySelector('.f-teacher').value.trim(),violations,sleepCount:violations.includes('B')?row.querySelector('.f-sleep').value:'',absentTime:violations.includes('G')?row.querySelector('.f-absent').value.trim():'',note:row.querySelector('.f-note').value.trim(),photoBase64:pb,photoMime:pm,photoName:pn};
-}
-async function sendOne(id){
-  const base=getBaseInfo();
-  if(!base.patroller||!base.period){showToast('⚠ 請先填寫姓名與節次','#ef4444');return;}
-  const row=document.querySelector(`.class-row[data-id="${id}"]`);
-  if(!row.querySelector('.f-class').value.trim()){showToast('⚠ 請填寫班級名稱','#ef4444');return;}
-  const btn=document.getElementById(`send-one-${id}`);
-  btn.textContent='☁ 送出中…';btn.disabled=true;
-  const rec=await buildRecord(row,base);
-  const arr=getLocal();arr.unshift(rec);saveLocal(arr);
-  if(hasGAS()){try{await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});}catch(e){}}
-  btn.textContent='✓ 已送出';btn.classList.add('done');
-  showToast(`✓ ${rec.className} 已送出！`);
-}
-async function submitAll(){
-  const base=getBaseInfo();
-  if(!base.patroller||!base.period){showToast('⚠ 請填寫姓名與節次','#ef4444');return;}
-  const classRows=document.querySelectorAll('.class-row');
-  for(const row of classRows){if(!row.querySelector('.f-class').value.trim()){showToast('⚠ 有班級名稱未填寫','#ef4444');row.querySelector('.f-class').focus();return;}}
-  const btn=document.getElementById('submit-btn');btn.disabled=true;btn.textContent='☁ 同步中…';
-  const records=[];
-  for(const row of classRows){
-    const bo=document.getElementById(`send-one-${row.dataset.id}`);
-    if(bo?.classList.contains('done'))continue;
-    records.push(await buildRecord(row,base));
+
+function buildRecord(row, base, cb){
+  var violations = [];
+  row.querySelectorAll('.chip.selected').forEach(function(c){ violations.push(c.dataset.code); });
+  var photoInput = row.querySelector('.f-photo');
+  var file = photoInput.files[0];
+
+  var rec = Object.assign({}, base, {
+    id: Date.now() + Math.random(),
+    ts: new Date().toISOString(),
+    className: row.querySelector('.f-class').value.trim(),
+    teacher: row.querySelector('.f-teacher').value.trim(),
+    violations: violations,
+    sleepCount: violations.indexOf('B')>=0 ? row.querySelector('.f-sleep').value : '',
+    absentTime: violations.indexOf('G')>=0 ? row.querySelector('.f-absent').value.trim() : '',
+    note: row.querySelector('.f-note').value.trim(),
+    photoBase64: '', photoMime: '', photoName: ''
+  });
+
+  if(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      rec.photoBase64 = e.target.result.split(',')[1];
+      rec.photoMime = file.type;
+      rec.photoName = file.name;
+      cb(rec);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    cb(rec);
   }
-  if(records.length===0){showToast('✓ 所有班級已逐一送出！');btn.disabled=false;btn.textContent='✉ 全部送出';resetForm();return;}
-  const arr=getLocal();records.forEach(r=>arr.unshift(r));saveLocal(arr);
-  if(hasGAS()){let ok=0;for(const rec of records){try{await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});ok++;}catch(e){}}showToast(ok===records.length?`✓ ${records.length} 班紀錄已同步！`:`✓ 已儲存，部分同步失敗`);}
-  else{showToast(`✓ ${records.length} 班紀錄已儲存`);}
-  btn.disabled=false;btn.textContent='✉ 全部送出';resetForm();
 }
+
+async function postRecord(rec){
+  if(!hasGAS()) return;
+  try{
+    await fetch(GAS_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(rec)});
+  }catch(e){}
+}
+
+// ── 立即送出單班 ──────────────────────────────
+function sendOne(id){
+  var base = getBaseInfo();
+  if(!base.patroller||!base.period){ showToast('⚠ 請先填寫姓名與節次','#ef4444'); return; }
+  var row = document.querySelector('.class-row[data-id="'+id+'"]');
+  if(!row.querySelector('.f-class').value.trim()){ showToast('⚠ 請填寫班級名稱','#ef4444'); return; }
+  var btn = document.getElementById('send-one-'+id);
+  btn.textContent = '☁ 送出中…'; btn.disabled = true;
+
+  buildRecord(row, base, function(rec){
+    var arr = getLocal(); arr.unshift(rec); saveLocal(arr);
+    postRecord(rec);
+    btn.textContent = '✓ 已送出'; btn.classList.add('done');
+    showToast('✓ '+rec.className+' 已送出！');
+  });
+}
+
+// ── 全部送出 ──────────────────────────────────
+function submitAll(){
+  var base = getBaseInfo();
+  if(!base.patroller||!base.period){ showToast('⚠ 請填寫姓名與節次','#ef4444'); return; }
+  var classRows = document.querySelectorAll('.class-row');
+  var allFilled = true;
+  classRows.forEach(function(row){
+    if(!row.querySelector('.f-class').value.trim()){ allFilled=false; row.querySelector('.f-class').focus(); }
+  });
+  if(!allFilled){ showToast('⚠ 有班級名稱未填寫','#ef4444'); return; }
+
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = '☁ 同步中…';
+
+  var pending = [];
+  classRows.forEach(function(row){
+    var btnOne = document.getElementById('send-one-'+row.dataset.id);
+    if(btnOne && btnOne.classList.contains('done')) return;
+    pending.push(row);
+  });
+
+  if(pending.length===0){
+    showToast('✓ 所有班級已逐一送出！');
+    btn.disabled=false; btn.textContent='✉ 全部送出';
+    resetForm(); return;
+  }
+
+  var done = 0;
+  var records = [];
+  pending.forEach(function(row){
+    buildRecord(row, base, function(rec){
+      records.push(rec);
+      done++;
+      if(done===pending.length){
+        var arr = getLocal();
+        records.forEach(function(r){ arr.unshift(r); });
+        saveLocal(arr);
+        var posts = records.map(function(r){ return postRecord(r); });
+        Promise.all(posts).then(function(){
+          showToast('✓ '+records.length+' 班紀錄已同步！');
+          btn.disabled=false; btn.textContent='✉ 全部送出';
+          resetForm();
+        });
+      }
+    });
+  });
+}
+
 function resetForm(){
   document.getElementById('period').value='';
   document.getElementById('class-list').innerHTML='';
-  rowId=0;addClassRow();updateCount();
-  window.scrollTo({top:0,behavior:'smooth'});
+  rowId=0; addClassRow(); updateCount();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 // ── 補充漏填 ──────────────────────────────────
 function toggleSupp(){
-  const panel=document.getElementById('supp-panel');
-  const open=panel.classList.toggle('open');
+  var panel = document.getElementById('supp-panel');
+  var open = panel.classList.toggle('open');
   if(open){
-    // 填入可選日期
-    const records=getLocal();
-    const dates=[...new Set(records.map(r=>r.dateStr))].sort().reverse();
-    const sel=document.getElementById('supp-date');
-    sel.innerHTML='<option value="">選擇日期</option>'+dates.map(d=>`<option>${d}</option>`).join('');
-    // 預設今天
-    const t=todayROC();
-    const todayStr=`${t.roc}/${String(t.m).padStart(2,'0')}/${String(t.d).padStart(2,'0')}`;
-    if(dates.includes(todayStr)) sel.value=todayStr;
+    var records = getLocal();
+    var dates = [];
+    records.forEach(function(r){ if(dates.indexOf(r.dateStr)<0) dates.push(r.dateStr); });
+    dates.sort().reverse();
+    var sel = document.getElementById('supp-date');
+    sel.innerHTML = '<option value="">選擇日期</option>';
+    dates.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+    var t=todayROC();
+    var todayStr=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
+    if(dates.indexOf(todayStr)>=0) sel.value=todayStr;
     updateSuppInfo();
-    panel.scrollIntoView({behavior:'smooth',block:'start'});
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
   }
 }
 
-// 顯示該節已有幾班
-document.addEventListener('change',e=>{
-  if(e.target.id==='supp-date'||e.target.id==='supp-period') updateSuppInfo();
-});
 function updateSuppInfo(){
-  const date=document.getElementById('supp-date').value;
-  const period=document.getElementById('supp-period').value;
-  const info=document.getElementById('supp-session-info');
-  if(!date||!period){info.style.display='none';return;}
-  const records=getLocal();
-  const existing=records.filter(r=>r.dateStr===date&&r.period===period);
-  info.style.display='block';
-  info.textContent=existing.length?`${date} ${period} 目前已有 ${existing.length} 班紀錄（${existing.map(r=>r.className).join('、')}）`:`${date} ${period} 尚無紀錄`;
+  var date = document.getElementById('supp-date').value;
+  var period = document.getElementById('supp-period').value;
+  var info = document.getElementById('supp-info');
+  if(!date||!period){ info.style.display='none'; return; }
+  var records = getLocal();
+  var existing = records.filter(function(r){ return r.dateStr===date && r.period===period; });
+  info.style.display = 'block';
+  if(existing.length>0){
+    info.textContent = date+' '+period+' 目前已有 '+existing.length+' 班（'+existing.map(function(r){return r.className;}).join('、')+'）';
+  } else {
+    info.textContent = date+' '+period+' 尚無紀錄';
+  }
 }
 
-async function submitSupp(){
-  const date=document.getElementById('supp-date').value;
-  const period=document.getElementById('supp-period').value;
-  const className=document.getElementById('supp-class').value.trim();
-  const patroller=document.getElementById('supp-patroller').value.trim();
-  if(!date||!period||!className||!patroller){showToast('⚠ 請填寫日期、節次、班級與姓名','#ef4444');return;}
+function submitSupp(){
+  var date = document.getElementById('supp-date').value;
+  var period = document.getElementById('supp-period').value;
+  var className = document.getElementById('supp-class').value.trim();
+  var patroller = document.getElementById('supp-patroller').value.trim();
+  if(!date||!period||!className||!patroller){ showToast('⚠ 請填寫日期、節次、班級與姓名','#ef4444'); return; }
 
-  const violations=[...document.querySelectorAll('#supp-chips .supp-chip.selected')].map(c=>c.dataset.code);
-  const parts=date.split('/');
-  const rec={
-    id:Date.now()+Math.random(),ts:new Date().toISOString(),
-    dateStr:date,year:parts[0]||'',month:parts[1]||'',day:parts[2]||'',
-    period,className,
-    teacher:document.getElementById('supp-teacher').value.trim(),
-    patroller,
-    dept:document.getElementById('supp-dept').value,
-    role:'補充',
-    violations,sleepCount:'',absentTime:'',
-    note:document.getElementById('supp-note').value.trim(),
-    isSupp:true
+  var violations = [];
+  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ violations.push(c.dataset.code); });
+  var parts = date.split('/');
+  var rec = {
+    id: Date.now()+Math.random(), ts: new Date().toISOString(),
+    dateStr: date, year: parts[0]||'', month: parts[1]||'', day: parts[2]||'',
+    period: period, className: className,
+    teacher: document.getElementById('supp-teacher').value.trim(),
+    patroller: patroller,
+    dept: document.getElementById('supp-dept').value,
+    role: '補充', violations: violations,
+    sleepCount:'', absentTime:'',
+    note: document.getElementById('supp-note').value.trim(),
+    isSupp: true
   };
 
-  const arr=getLocal();arr.unshift(rec);saveLocal(arr);
-  if(hasGAS()){try{await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});}catch(e){}}
-  showToast(`✓ 已補充 ${className} 的紀錄！`);
-  // 清空補充欄位
+  var arr = getLocal(); arr.unshift(rec); saveLocal(arr);
+  postRecord(rec);
+  showToast('✓ 已補充 '+className+' 的紀錄！');
   document.getElementById('supp-class').value='';
   document.getElementById('supp-teacher').value='';
   document.getElementById('supp-note').value='';
-  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ c.classList.remove('selected'); });
   updateSuppInfo();
   renderAdmin();
 }
 
 // ── Toast ─────────────────────────────────────
-function showToast(msg,bg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.background=bg||'#10b981';
-  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+function showToast(msg, bg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = bg||'#10b981';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
 }
 
-// ── 後台渲染 ──────────────────────────────────
-const VC={A:'嬉鬧吵雜',B:'睡覺較多',C:'3C違規',D:'環境髒亂',E:'門窗未關',F:'電源未關',G:'老師缺席',OK:'正常上課'};
-const CHIPS_DEF=[
+// ── 後台 ──────────────────────────────────────
+var VC = {A:'嬉鬧吵雜',B:'睡覺較多',C:'3C違規',D:'環境髒亂',E:'門窗未關',F:'電源未關',G:'老師缺席',OK:'正常上課'};
+var CHIPS_DEF = [
   {code:'A',label:'嬉鬧吵雜，管理欠佳'},{code:'B',label:'睡覺人數較多'},
   {code:'C',label:'不當使用手機/3C'},{code:'D',label:'教室走廊髒亂'},
   {code:'E',label:'室外課門窗未關'},{code:'F',label:'室外課電源未關'},
   {code:'G',label:'老師無故未到'},{code:'OK',label:'正常上課'},
 ];
+
 function getViols(r){ return Array.isArray(r.violations)?r.violations:(r.violations||'').split('+').filter(Boolean); }
 
 async function renderAdmin(){
-  let records=[];
+  var records = [];
   if(hasGAS()){
     document.getElementById('record-list').innerHTML='<div class="no-records"><div class="icon">☁</div>雲端載入中…</div>';
-    try{const res=await fetch(GAS_URL+'?action=getAll');const json=await res.json();records=json.records||[];saveLocal(records);}
-    catch(e){records=getLocal();showToast('⚠ 雲端讀取失敗，顯示本機資料','#f59e0b');}
-  }else{records=getLocal();}
+    try{
+      var res = await fetch(GAS_URL+'?action=getAll');
+      var json = await res.json();
+      records = json.records||[]; saveLocal(records);
+    }catch(e){ records=getLocal(); showToast('⚠ 雲端讀取失敗，顯示本機資料','#f59e0b'); }
+  }else{ records=getLocal(); }
 
-  const fd=document.getElementById('filter-date').value;
-  const fde=document.getElementById('filter-dept').value;
-  const dates=[...new Set(records.map(r=>r.dateStr))].sort().reverse();
-  const depts=[...new Set(records.map(r=>r.dept).filter(Boolean))];
-  updateFilter('filter-date',dates,fd);updateFilter('filter-dept',depts,fde);
+  var fd = document.getElementById('filter-date').value;
+  var fde = document.getElementById('filter-dept').value;
 
-  const filtered=records.filter(r=>(!fd||r.dateStr===fd)&&(!fde||r.dept===fde));
-  const todayStr=(()=>{const t=todayROC();return `${t.roc}/${String(t.m).padStart(2,'0')}/${String(t.d).padStart(2,'0')}`;})();
+  var dates=[]; var depts=[];
+  records.forEach(function(r){
+    if(r.dateStr && dates.indexOf(r.dateStr)<0) dates.push(r.dateStr);
+    if(r.dept && depts.indexOf(r.dept)<0) depts.push(r.dept);
+  });
+  dates.sort().reverse();
+  updateFilter('filter-date', dates, fd);
+  updateFilter('filter-dept', depts, fde);
+
+  var filtered = records.filter(function(r){ return (!fd||r.dateStr===fd)&&(!fde||r.dept===fde); });
+  var t=todayROC();
+  var todayStr=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
+
   document.getElementById('stat-total').textContent=records.length;
-  document.getElementById('stat-violation').textContent=records.filter(r=>{const v=getViols(r);return v.length&&!v.every(x=>x==='OK');}).length;
-  document.getElementById('stat-today').textContent=records.filter(r=>r.dateStr===todayStr).length;
+  document.getElementById('stat-violation').textContent=records.filter(function(r){var v=getViols(r);return v.length&&!v.every(function(x){return x==='OK';});}).length;
+  document.getElementById('stat-today').textContent=records.filter(function(r){return r.dateStr===todayStr;}).length;
 
-  const list=document.getElementById('record-list');
-  if(!filtered.length){list.innerHTML='<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>';return;}
-  list.innerHTML=filtered.map((r,i)=>renderItem(r,i)).join('');
+  var list = document.getElementById('record-list');
+  if(!filtered.length){ list.innerHTML='<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>'; return; }
+
+  list.innerHTML='';
+  filtered.forEach(function(r, i){ list.appendChild(buildRecordItem(r, i, filtered)); });
 }
 
-function renderItem(r,i){
-  const viols=getViols(r);
-  const hasV=viols.length&&!viols.every(v=>v==='OK');
-  const time=r.ts?new Date(r.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}):(r.tsDisplay||'');
-  const tags=viols.map(v=>`<span class="vtag${v==='OK'?' ok':''}">${v}·${VC[v]||v}</span>`).join('');
-  const notes=[];
-  if(r.sleepCount)notes.push(`睡覺約${r.sleepCount}人`);
-  if(r.absentTime)notes.push(`老師：${r.absentTime}`);
-  if(r.note)notes.push(r.note);
-  const suppBadge=r.isSupp?'<span class="vtag supp">補充</span>':'';
-  const photoHtml=r.photoUrl?`<div><a class="photo-thumb" href="${r.photoUrl}" target="_blank">📷 查看照片</a></div>`:'';
-  const editChips=CHIPS_DEF.map(c=>{
-    const sel=viols.includes(c.code)?'selected':'';
-    const okCls=c.code==='OK'?'ok-chip':'';
-    const cs=c.code==='OK'?'style="color:var(--success)"':'';
-    return `<div class="edit-chip ${okCls} ${sel}" data-code="${c.code}" onclick="this.classList.toggle('selected')"><span class="chip-code" ${cs}>${c.code}</span><span>${c.label}</span></div>`;
-  }).join('');
+function buildRecordItem(r, i, filtered){
+  var viols = getViols(r);
+  var hasV = viols.length && !viols.every(function(v){return v==='OK';});
+  var time = r.ts ? new Date(r.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}) : (r.tsDisplay||'');
 
-  return `<div class="record-item ${hasV?'has-violation':''}" id="rec-${i}">
-    <div class="record-meta">
-      <div>
-        <div class="record-class">${r.period||''}｜${r.className||''}</div>
-        <div class="record-info">${r.dateStr||''} · 任課：${r.teacher||'—'}</div>
-      </div>
-      <div style="text-align:right">
-        <div class="record-time">${time}</div>
-        <div class="record-info">${r.dept||''} ${r.role||''} ${r.patroller||''}</div>
-      </div>
-    </div>
-    ${suppBadge||tags?`<div class="violation-tags">${suppBadge}${tags}</div>`:''}
-    ${notes.length?`<div style="font-size:12px;color:var(--text2);margin-top:4px">${notes.join('｜')}</div>`:''}
-    ${photoHtml}
-    <div class="record-btns">
-      <button class="btn-edit-rec" onclick="toggleEdit('ep-${i}','rec-${i}')">✏ 修改</button>
-      <button class="btn-del-rec" onclick="deleteRecord(${i})">🗑 刪除</button>
-    </div>
-    <div class="edit-panel" id="ep-${i}">
-      <div class="row2" style="margin-bottom:10px">
-        <div class="field"><label>班級名稱</label><input type="text" id="ec-${i}" value="${r.className||''}"></div>
-        <div class="field"><label>任課老師</label><input type="text" id="et-${i}" value="${r.teacher||''}"></div>
-      </div>
-      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">紀錄代號</label>
-      <div class="edit-chip-grid" id="ech-${i}">${editChips}</div>
-      <div class="field"><label>備註</label><textarea id="en-${i}">${r.note||''}</textarea></div>
-      <div class="edit-actions">
-        <button class="btn-cancel-edit" onclick="toggleEdit('ep-${i}','rec-${i}')">取消</button>
-        <button class="btn-save-edit" onclick="saveEdit(${i})">儲存修改</button>
-      </div>
-    </div>
-  </div>`;
+  var item = document.createElement('div');
+  item.className = 'record-item' + (hasV?' has-violation':'');
+
+  // Meta
+  var meta = document.createElement('div'); meta.className='record-meta';
+  var left = document.createElement('div');
+  var cls = document.createElement('div'); cls.className='record-class'; cls.textContent=(r.period||'')+'｜'+(r.className||''); left.appendChild(cls);
+  var inf = document.createElement('div'); inf.className='record-info'; inf.textContent=(r.dateStr||'')+' · 任課：'+(r.teacher||'—'); left.appendChild(inf);
+  var right = document.createElement('div'); right.style.textAlign='right';
+  var rt = document.createElement('div'); rt.className='record-time'; rt.textContent=time; right.appendChild(rt);
+  var ri = document.createElement('div'); ri.className='record-info'; ri.textContent=(r.dept||'')+' '+(r.role||'')+' '+(r.patroller||''); right.appendChild(ri);
+  meta.appendChild(left); meta.appendChild(right); item.appendChild(meta);
+
+  // Tags
+  if(r.isSupp || viols.length){
+    var tags = document.createElement('div'); tags.className='violation-tags';
+    if(r.isSupp){ var s=document.createElement('span'); s.className='vtag supp'; s.textContent='補充'; tags.appendChild(s); }
+    viols.forEach(function(v){ var span=document.createElement('span'); span.className='vtag'+(v==='OK'?' ok':''); span.textContent=v+'·'+(VC[v]||v); tags.appendChild(span); });
+    item.appendChild(tags);
+  }
+
+  // Notes
+  var notes=[];
+  if(r.sleepCount) notes.push('睡覺約'+r.sleepCount+'人');
+  if(r.absentTime) notes.push('老師：'+r.absentTime);
+  if(r.note) notes.push(r.note);
+  if(notes.length){ var nd=document.createElement('div'); nd.style.cssText='font-size:12px;color:var(--text2);margin-top:4px'; nd.textContent=notes.join('｜'); item.appendChild(nd); }
+
+  // Photo
+  if(r.photoUrl){ var pa=document.createElement('a'); pa.className='photo-link'; pa.href=r.photoUrl; pa.target='_blank'; pa.textContent='📷 查看照片'; item.appendChild(pa); }
+
+  // Action buttons
+  var btns = document.createElement('div'); btns.className='record-btns';
+  var btnEdit = document.createElement('button'); btnEdit.className='btn-edit-rec'; btnEdit.textContent='✏ 修改';
+  var btnDel = document.createElement('button'); btnDel.className='btn-del-rec'; btnDel.textContent='🗑 刪除';
+  btns.appendChild(btnEdit); btns.appendChild(btnDel); item.appendChild(btns);
+
+  // Edit panel
+  var ep = document.createElement('div'); ep.className='edit-panel';
+
+  var r2 = document.createElement('div'); r2.className='row2'; r2.style.marginBottom='10px';
+  var fc = document.createElement('div'); fc.className='field'; fc.innerHTML='<label>班級名稱</label>'; var ic=document.createElement('input'); ic.type='text'; ic.value=r.className||''; fc.appendChild(ic); r2.appendChild(fc);
+  var ft = document.createElement('div'); ft.className='field'; ft.innerHTML='<label>任課老師</label>'; var it=document.createElement('input'); it.type='text'; it.value=r.teacher||''; ft.appendChild(it); r2.appendChild(ft);
+  ep.appendChild(r2);
+
+  var cl = document.createElement('label'); cl.style.cssText='font-size:12px;color:var(--text2);display:block;margin-bottom:4px'; cl.textContent='紀錄代號'; ep.appendChild(cl);
+  var cg = document.createElement('div'); cg.className='edit-chip-grid';
+  CHIPS_DEF.forEach(function(def){
+    var c=document.createElement('div'); c.className='edit-chip'+(def.code==='OK'?' ok-chip':'')+(viols.indexOf(def.code)>=0?' selected':'');
+    c.dataset.code=def.code;
+    var cs=document.createElement('span'); cs.className='chip-code'; if(def.code==='OK') cs.style.color='var(--success)'; cs.textContent=def.code; c.appendChild(cs);
+    var cl2=document.createElement('span'); cl2.textContent=def.label; c.appendChild(cl2);
+    c.addEventListener('click',function(){c.classList.toggle('selected');});
+    cg.appendChild(c);
+  });
+  ep.appendChild(cg);
+
+  var fn = document.createElement('div'); fn.className='field'; fn.innerHTML='<label>備註</label>'; var ta=document.createElement('textarea'); ta.value=r.note||''; fn.appendChild(ta); ep.appendChild(fn);
+
+  var ea = document.createElement('div'); ea.className='edit-actions';
+  var bc = document.createElement('button'); bc.className='btn-cancel-edit'; bc.textContent='取消';
+  var bs = document.createElement('button'); bs.className='btn-save-edit'; bs.textContent='儲存修改';
+  ea.appendChild(bc); ea.appendChild(bs); ep.appendChild(ea);
+  item.appendChild(ep);
+
+  // Events
+  btnEdit.addEventListener('click', function(){
+    var open = ep.classList.toggle('open');
+    item.classList.toggle('editing', open);
+  });
+  bc.addEventListener('click', function(){ ep.classList.remove('open'); item.classList.remove('editing'); });
+  bs.addEventListener('click', function(){
+    var records = getLocal();
+    var idx = records.findIndex(function(x){ return x.id===r.id; });
+    if(idx===-1) return;
+    var newViols = []; cg.querySelectorAll('.edit-chip.selected').forEach(function(c){ newViols.push(c.dataset.code); });
+    records[idx] = Object.assign({}, records[idx], {className:ic.value.trim(), teacher:it.value.trim(), violations:newViols, note:ta.value.trim(), editedAt:new Date().toISOString()});
+    saveLocal(records);
+    showToast('✓ 修改已儲存');
+    renderAdmin();
+  });
+  btnDel.addEventListener('click', function(){
+    if(!confirm('確定要刪除這筆紀錄嗎？')) return;
+    var records = getLocal().filter(function(x){ return x.id!==r.id; });
+    saveLocal(records);
+    showToast('已刪除紀錄','#6b7280');
+    renderAdmin();
+  });
+
+  return item;
 }
 
-function toggleEdit(panelId,itemId){
-  const panel=document.getElementById(panelId);
-  const open=panel.classList.toggle('open');
-  document.getElementById(itemId).classList.toggle('editing',open);
-}
-
-function saveEdit(i){
-  const records=getLocal();
-  const filtered=getFilteredRecords(records);
-  const rec=filtered[i];if(!rec)return;
-  const origIdx=records.findIndex(r=>r.id===rec.id);if(origIdx===-1)return;
-  const viols=[...document.querySelectorAll(`#ech-${i} .edit-chip.selected`)].map(c=>c.dataset.code);
-  records[origIdx]={...records[origIdx],className:document.getElementById(`ec-${i}`).value.trim(),teacher:document.getElementById(`et-${i}`).value.trim(),violations:viols,note:document.getElementById(`en-${i}`).value.trim(),editedAt:new Date().toISOString()};
-  saveLocal(records);
-  showToast('✓ 修改已儲存');
-  renderAdmin();
-}
-
-function deleteRecord(i){
-  if(!confirm('確定要刪除這筆紀錄嗎？'))return;
-  const records=getLocal();
-  const filtered=getFilteredRecords(records);
-  const rec=filtered[i];if(!rec)return;
-  saveLocal(records.filter(r=>r.id!==rec.id));
-  showToast('已刪除紀錄','#6b7280');
-  renderAdmin();
-}
-
-function getFilteredRecords(records){
-  const fd=document.getElementById('filter-date').value;
-  const fde=document.getElementById('filter-dept').value;
-  return records.filter(r=>(!fd||r.dateStr===fd)&&(!fde||r.dept===fde));
-}
-
-function updateFilter(id,options,current){
-  const sel=document.getElementById(id);
-  const first=sel.options[0].outerHTML;
-  sel.innerHTML=first+options.map(o=>`<option ${o===current?'selected':''}>${o}</option>`).join('');
+function updateFilter(id, options, current){
+  var sel = document.getElementById(id);
+  var first = sel.options[0].outerHTML;
+  sel.innerHTML = first;
+  options.forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(o===current) opt.selected=true; sel.appendChild(opt); });
 }
 
 function exportCSV(){
-  const records=getLocal();
-  if(!records.length){showToast('⚠ 尚無資料','#f59e0b');return;}
-  const headers=['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','照片連結','送出時間'];
-  const rows=records.map(r=>{
-    const v=Array.isArray(r.violations)?r.violations.join('+'):(r.violations||'');
+  var records = getLocal();
+  if(!records.length){ showToast('⚠ 尚無資料','#f59e0b'); return; }
+  var headers = ['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','照片連結','送出時間'];
+  var rows = records.map(function(r){
+    var v = Array.isArray(r.violations)?r.violations.join('+'):(r.violations||'');
     return [r.dateStr,r.period,r.className,r.teacher,r.dept,r.role,r.patroller,v,r.sleepCount,r.absentTime,r.note,r.isSupp?'補充':'',r.photoUrl||'',r.ts?new Date(r.ts).toLocaleString('zh-TW'):'']
-      .map(x=>`"${(x||'').replace(/"/g,'""')}"`).join(',');
+      .map(function(x){ return '"'+(String(x||'')).replace(/"/g,'""')+'"'; }).join(',');
   });
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+[headers.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'}));
-  a.download=`巡堂紀錄_${new Date().toLocaleDateString('zh-TW')}.csv`;
+  var csv = '\uFEFF' + [headers.join(',')].concat(rows).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = '巡堂紀錄_'+new Date().toLocaleDateString('zh-TW')+'.csv';
   a.click();
 }
 
 function clearAll(){
-  if(confirm('確定要清除本機快取嗎？（Google Sheets 資料不受影響）')){
-    localStorage.removeItem(STORAGE_KEY);renderAdmin();sh
+  if(!confirm('確定要清除本機快取嗎？（Google Sheets 資料不受影響）')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderAdmin();
+  showToast('已清除本機快取','#6b7280');
+}
+</script>
+</body>
+</html>
