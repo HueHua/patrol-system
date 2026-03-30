@@ -329,8 +329,8 @@ function addClassRow(){
     <div class="class-row-header">
       <span class="class-row-num">班級 ${id}</span>
       <div class="row-actions">
-        <button class="btn-send-one" id="send-one-${id}" onclick="sendOne(${id})">↑ 立即送出</button>
-        <button class="btn-remove" onclick="removeRow(${id})">✕</button>
+        <button class="btn-send-one" id="send-one-${id}" data-rid="${id}" onclick="sendOne(this.dataset.rid)">↑ 立即送出</button>
+        <button class="btn-remove" data-rid="${id}" onclick="removeRow(this.dataset.rid)">✕</button>
       </div>
     </div>
     <div class="row2">
@@ -360,11 +360,11 @@ function addClassRow(){
     <div class="photo-upload">
       <label class="photo-label">
         <span>📷</span><span>拍照或上傳照片（選填）</span>
-        <input type="file" class="f-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,${id})">
+        <input type="file" class="f-photo" accept="image/*" onchange="previewPhoto(this,${id})">
       </label>
       <div class="photo-preview" id="preview-${id}">
         <img id="preview-img-${id}" src="" alt="">
-        <button class="photo-remove" onclick="removePhoto(${id})">✕</button>
+        <button class="photo-remove" data-rid="${id}" onclick="removePhoto(this.dataset.rid)">✕</button>
       </div>
     </div>`;
   document.getElementById('class-list').appendChild(div);
@@ -660,9 +660,4 @@ function exportCSV(){
 
 function clearAll(){
   if(confirm('確定要清除本機快取嗎？（Google Sheets 資料不受影響）')){
-    localStorage.removeItem(STORAGE_KEY);renderAdmin();showToast('已清除本機快取','#6b7280');
-  }
-}
-</script>
-</body>
-</html>
+    localStorage.removeItem(STORAGE_KEY);renderAdmin();sh
