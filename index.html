@@ -4,23 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>臺中二中 巡堂紀錄系統</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<!-- 班級列模板 -->
 <template id="tpl-row">
   <div class="class-row">
     <div class="class-row-header">
       <span class="class-row-num"></span>
       <div class="row-actions">
-        <button class="btn-send-one">↑ 立即送出</button>
-        <button class="btn-remove">✕</button>
+        <button class="btn-send-one" type="button">↑ 立即送出</button>
+        <button class="btn-remove" type="button">✕</button>
       </div>
     </div>
     <div class="row2">
       <div class="field"><label>班級名稱</label><input type="text" class="f-class" placeholder="例：高一忠" autocomplete="off"></div>
       <div class="field"><label>任課老師</label><input type="text" class="f-teacher" placeholder="老師姓名" autocomplete="off"></div>
     </div>
-    <label class="chip-label">紀錄代號（可複選）</label>
+    <label class="chip-section-label">紀錄代號（可複選）</label>
     <div class="chip-grid">
       <div class="chip" data-code="A"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
       <div class="chip" data-code="B"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
@@ -32,10 +31,10 @@
       <div class="chip chip-ok" data-code="OK"><span class="chip-code ok-code">✓</span><span>正常上課</span></div>
     </div>
     <div class="extra-b" style="display:none">
-      <div class="field" style="margin-top:10px"><label>B：睡覺大約人數</label><input type="number" class="f-sleep" placeholder="例：5" min="1"></div>
+      <div class="field" style="margin-top:10px"><label>B：睡覺人數（人）</label><input type="number" class="f-sleep" placeholder="請填人數" min="1"></div>
     </div>
     <div class="extra-g" style="display:none">
-      <div class="field"><label>G：老師到幾點幾分</label><input type="text" class="f-absent" placeholder="例：未到 / 10:15 到達"></div>
+      <div class="field" style="margin-top:10px"><label>G：老師到幾點幾分</label><input type="text" class="f-absent" placeholder="例：未到 / 10:15 到達"></div>
     </div>
     <div class="field" style="margin-top:10px;margin-bottom:0">
       <label>備註（選填）</label>
@@ -47,7 +46,7 @@
         <input type="file" class="f-photo" accept="image/*">
       </label>
       <div class="photo-preview" style="display:none">
-        <img class="preview-img" src="" alt="">
+        <img class="preview-img" src="" alt="預覽">
         <button class="photo-remove" type="button">✕</button>
       </div>
     </div>
@@ -56,149 +55,205 @@
 
 <style>
   :root{
-    --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
-    --accent:#4f8ef7;--accent2:#7c3aed;--warn:#f59e0b;
-    --danger:#ef4444;--success:#10b981;
-    --text:#e8eaf0;--text2:#8b90a7;--border:#2d3148;
-    --radius:14px;--font:'Noto Sans TC',sans-serif;--mono:'DM Mono',monospace;
+    --bg:#f5f6fa;
+    --surface:#ffffff;
+    --surface2:#f0f2f8;
+    --accent:#2563eb;
+    --accent-light:#eff6ff;
+    --accent2:#7c3aed;
+    --warn:#d97706;
+    --warn-light:#fffbeb;
+    --danger:#dc2626;
+    --danger-light:#fef2f2;
+    --success:#059669;
+    --success-light:#ecfdf5;
+    --text:#1e293b;
+    --text2:#64748b;
+    --text3:#94a3b8;
+    --border:#e2e8f0;
+    --border2:#cbd5e1;
+    --radius:12px;
+    --shadow:0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+    --font:'Noto Sans TC',sans-serif;
+    --mono:'DM Mono',monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;font-size:15px;line-height:1.6}
 
-  .topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;height:56px;gap:10px}
-  .topbar-title{font-size:15px;font-weight:700;flex:1}
+  /* Topbar */
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;height:54px;gap:10px;box-shadow:var(--shadow)}
+  .topbar-title{font-size:15px;font-weight:700;flex:1;color:var(--text)}
   .topbar-title span{color:var(--accent)}
-  .tab-switch{display:flex;gap:3px;background:var(--surface2);border-radius:10px;padding:3px}
-  .tab-btn{border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:500;padding:6px 12px;border-radius:7px;transition:all .2s;color:var(--text2);background:transparent}
-  .tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(79,142,247,.4)}
+  .tab-switch{display:flex;gap:3px;background:var(--surface2);border-radius:10px;padding:3px;border:1px solid var(--border)}
+  .tab-btn{border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:500;padding:6px 13px;border-radius:7px;transition:all .2s;color:var(--text2);background:transparent}
+  .tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
 
-  .page{display:none;padding:16px 14px 120px;max-width:600px;margin:0 auto}
+  /* Layout */
+  .page{display:none;padding:16px 14px 100px;max-width:600px;margin:0 auto}
   .page.active{display:block}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
-  .card-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  /* Card */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
   .card-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
+  /* Step header */
+  .step-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(37,99,235,.3)}
+  .step-label{font-size:14px;font-weight:700;color:var(--text)}
+  .step-sub{font-size:12px;color:var(--text2);margin-top:1px}
+
+  /* Form */
   .field{margin-bottom:12px}
-  .field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
-  .field select,.field input[type=text],.field input[type=number],.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:15px;padding:10px 13px;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
-  .field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.12)}
-  .field textarea{resize:vertical;min-height:56px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;letter-spacing:.2px}
+  .field select,.field input[type=text],.field input[type=number],.field textarea{
+    width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;
+    color:var(--text);font-family:var(--font);font-size:15px;padding:10px 13px;
+    outline:none;transition:all .18s;appearance:none;-webkit-appearance:none;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.04)
+  }
+  .field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .field textarea{resize:vertical;min-height:60px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 
-  .conn-badge{font-size:12px;font-weight:600;border-radius:8px;padding:8px 14px;text-align:center;margin-bottom:12px;border:1px solid}
-  .date-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:14px;color:var(--text2);margin-bottom:12px;justify-content:center}
-  .date-badge strong{color:var(--text);font-weight:600}
+  /* Badges */
+  .conn-badge{font-size:12px;font-weight:600;border-radius:8px;padding:9px 14px;text-align:center;margin-bottom:12px;border:1px solid}
+  .date-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 14px;font-size:14px;color:var(--text2);margin-bottom:12px;box-shadow:var(--shadow)}
+  .date-badge strong{color:var(--text);font-weight:700}
 
-  .step-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-  .step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .step-label{font-size:14px;font-weight:700}
-  .step-sub{font-size:12px;color:var(--text2);margin-top:1px}
-
-  .summary-bar{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px}
+  /* Summary bar */
+  .summary-bar{display:flex;align-items:center;gap:10px;background:var(--accent-light);border:1px solid #bfdbfe;border-radius:9px;padding:10px 14px;margin-bottom:12px}
   .summary-bar .count{font-family:var(--mono);font-weight:700;color:var(--accent);font-size:22px}
-  .summary-bar .label{color:var(--text2)}
+  .summary-bar .label{color:var(--accent);font-size:13px;font-weight:500}
 
+  /* Class row */
   .class-list{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
-  .class-row{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px}
-  .class-row-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .class-row-num{font-size:12px;font-weight:700;color:var(--accent);font-family:var(--mono)}
+  .class-row{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px}
+  .class-row-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .class-row-num{font-size:12px;font-weight:700;color:var(--accent);font-family:var(--mono);background:var(--accent-light);padding:3px 10px;border-radius:20px;border:1px solid #bfdbfe}
   .row-actions{display:flex;align-items:center;gap:8px}
-  .btn-send-one{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
-  .btn-send-one:hover{background:rgba(79,142,247,.12)}
-  .btn-send-one.done{border-color:var(--success);color:var(--success)}
-  .btn-remove{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;transition:color .15s}
-  .btn-remove:hover{color:var(--danger)}
+  .btn-send-one{font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;border:1.5px solid var(--accent);color:var(--accent);background:var(--accent-light);cursor:pointer;font-family:var(--font);transition:all .15s}
+  .btn-send-one:hover{background:var(--accent);color:#fff}
+  .btn-send-one.done{border-color:var(--success);color:var(--success);background:var(--success-light)}
+  .btn-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px;line-height:1;padding:2px 4px;transition:color .15s;border-radius:4px}
+  .btn-remove:hover{color:var(--danger);background:var(--danger-light)}
 
-  .chip-label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:8px}
+  /* Chips */
+  .chip-section-label{font-size:12px;font-weight:600;color:var(--text2);display:block;margin:10px 0 6px}
   .chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-  .chip{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:flex;align-items:flex-start;gap:6px;line-height:1.4;color:var(--text2)}
-  .chip-code{font-family:var(--mono);font-size:10px;background:var(--border);padding:1px 5px;border-radius:3px;color:var(--accent);flex-shrink:0;margin-top:1px}
+  .chip{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:flex;align-items:flex-start;gap:7px;line-height:1.4;color:var(--text2)}
+  .chip:hover{border-color:var(--accent);background:var(--accent-light)}
+  .chip-code{font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border2);padding:1px 6px;border-radius:4px;color:var(--accent);flex-shrink:0;margin-top:1px}
   .ok-code{color:var(--success)}
-  .chip.selected{border-color:var(--accent);background:rgba(79,142,247,.12);color:var(--text)}
-  .chip.selected .chip-code{background:var(--accent);color:#fff}
-  .chip-ok.selected{border-color:var(--success)!important;background:rgba(16,185,129,.1)!important}
-  .chip-ok.selected .chip-code{background:var(--success)!important}
+  .chip.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+  .chip.selected .chip-code{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .chip-ok.selected{border-color:var(--success)!important;background:var(--success-light)!important;color:var(--success)!important}
+  .chip-ok.selected .chip-code{background:var(--success)!important;border-color:var(--success)!important}
 
+  /* Photo */
   .photo-upload{margin-top:10px}
-  .photo-label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2)}
-  .photo-label:hover{border-color:var(--accent);color:var(--accent)}
+  .photo-label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--border2);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2)}
+  .photo-label:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
   .photo-label input[type=file]{display:none}
-  .photo-preview{margin-top:8px;position:relative}
-  .photo-preview .preview-img{width:100%;border-radius:8px;border:1px solid var(--border);max-height:180px;object-fit:cover}
-  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;line-height:24px;text-align:center}
+  .photo-preview{margin-top:8px;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--border)}
+  .photo-preview .preview-img{width:100%;max-height:200px;object-fit:cover;display:block}
+  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:26px;text-align:center}
 
-  .btn-add-class{width:100%;padding:13px;border:1.5px dashed var(--border);background:transparent;border-radius:12px;color:var(--text2);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px}
-  .btn-add-class:hover{border-color:var(--accent);color:var(--accent)}
+  /* Buttons */
+  .btn-add-class{width:100%;padding:13px;border:1.5px dashed var(--border2);background:transparent;border-radius:10px;color:var(--text2);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-add-class:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 
-  .btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius);color:#fff;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(79,142,247,.35);transition:all .2s;margin-top:6px}
-  .btn-submit:active{transform:scale(.97)}
-  .btn-submit:disabled{opacity:.5;cursor:not-allowed}
+  .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius);color:#fff;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:all .2s;margin-top:6px}
+  .btn-submit:hover{box-shadow:0 6px 20px rgba(37,99,235,.4);transform:translateY(-1px)}
+  .btn-submit:active{transform:scale(.98)}
+  .btn-submit:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
-  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;white-space:nowrap}
+  /* Toast */
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:11px 22px;border-radius:100px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;white-space:nowrap;box-shadow:var(--shadow-md)}
   .toast.show{opacity:1}
 
-  /* Admin */
+  /* Admin stats */
   .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center}
-  .stat-num{font-size:26px;font-weight:900;font-family:var(--mono);color:var(--accent);line-height:1}
-  .stat-label{font-size:11px;color:var(--text2);margin-top:4px}
+  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+  .stat-num{font-size:28px;font-weight:900;font-family:var(--mono);color:var(--accent);line-height:1}
+  .stat-label{font-size:11px;color:var(--text2);margin-top:4px;font-weight:500}
 
   .admin-actions{display:flex;gap:8px;margin-bottom:12px}
-  .btn-export{flex:1;padding:13px;background:transparent;border:1.5px solid var(--accent);border-radius:12px;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
-  .btn-supplement{flex:1;padding:13px;background:rgba(79,142,247,.1);border:1.5px solid var(--accent);border-radius:12px;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+  .btn-export{flex:1;padding:12px;background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+  .btn-export:hover{background:var(--accent-light)}
+  .btn-supplement{flex:1;padding:12px;background:var(--accent);border:1.5px solid var(--accent);border-radius:10px;color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 2px 8px rgba(37,99,235,.2)}
+  .btn-supplement:hover{background:#1d4ed8}
 
-  .supplement-panel{display:none;background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  /* Supplement panel */
+  .supplement-panel{display:none;background:var(--accent-light);border:1.5px solid #93c5fd;border-radius:var(--radius);padding:16px;margin-bottom:14px}
   .supplement-panel.open{display:block}
 
+  /* Filter */
   .filter-row{display:flex;gap:8px;margin-bottom:12px}
-  .filter-row select{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;appearance:none}
+  .filter-row select{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;appearance:none;cursor:pointer;box-shadow:var(--shadow)}
+  .filter-row select:focus{border-color:var(--accent)}
 
+  /* Record list */
   .record-list{display:flex;flex-direction:column;gap:10px}
-  .record-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden;transition:border-color .2s}
-  .record-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .record-item{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden;transition:all .2s;box-shadow:var(--shadow)}
+  .record-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);border-radius:4px 0 0 4px}
   .record-item.has-violation::before{background:var(--warn)}
-  .record-item.editing{border-color:var(--accent)}
-  .record-meta{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-  .record-class{font-size:15px;font-weight:700}
-  .record-time{font-size:11px;font-family:var(--mono);color:var(--text2)}
-  .record-info{font-size:12px;color:var(--text2);margin-bottom:4px}
-  .violation-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
-  .vtag{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:var(--warn);font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;font-family:var(--mono)}
-  .vtag.ok{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--success)}
-  .vtag.supp{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.3);color:var(--accent)}
+  .record-item.editing{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .record-meta{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+  .record-class{font-size:15px;font-weight:700;color:var(--text)}
+  .record-time{font-size:11px;font-family:var(--mono);color:var(--text3)}
+  .record-info{font-size:12px;color:var(--text2);margin-bottom:3px}
+  .violation-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px}
+  .vtag{background:var(--warn-light);border:1px solid #fcd34d;color:var(--warn);font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;font-family:var(--mono)}
+  .vtag.ok{background:var(--success-light);border-color:#6ee7b7;color:var(--success)}
+  .vtag.supp{background:var(--accent-light);border-color:#93c5fd;color:var(--accent)}
 
-  .record-btns{display:flex;gap:6px;margin-top:8px}
-  .btn-edit-rec,.btn-del-rec{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text2);background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
-  .btn-edit-rec:hover{border-color:var(--accent);color:var(--accent)}
-  .btn-del-rec:hover{border-color:var(--danger);color:var(--danger)}
+  .record-btns{display:flex;gap:6px;margin-top:9px}
+  .btn-edit-rec,.btn-del-rec{font-size:11px;font-weight:600;padding:4px 11px;border-radius:6px;border:1.5px solid var(--border);color:var(--text2);background:var(--surface2);cursor:pointer;font-family:var(--font);transition:all .15s}
+  .btn-edit-rec:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+  .btn-del-rec:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-light)}
 
+  /* Edit panel */
   .edit-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
   .edit-panel.open{display:block}
   .edit-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
-  .edit-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;padding:7px 9px;cursor:pointer;font-size:11px;font-weight:500;display:flex;align-items:flex-start;gap:5px;line-height:1.4;color:var(--text2);transition:all .15s}
-  .edit-chip.selected{border-color:var(--accent);background:rgba(79,142,247,.12);color:var(--text)}
-  .edit-chip.selected .chip-code{background:var(--accent);color:#fff}
-  .edit-chip.ok-chip.selected{border-color:var(--success)!important;background:rgba(16,185,129,.1)!important}
-  .edit-chip.ok-chip.selected .chip-code{background:var(--success)!important}
+  .edit-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;cursor:pointer;font-size:11px;font-weight:500;display:flex;align-items:flex-start;gap:5px;line-height:1.4;color:var(--text2);transition:all .15s}
+  .edit-chip:hover{border-color:var(--accent)}
+  .edit-chip.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+  .edit-chip.selected .chip-code{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .edit-chip.ok-chip.selected{border-color:var(--success)!important;background:var(--success-light)!important;color:var(--success)!important}
+  .edit-chip.ok-chip.selected .chip-code{background:var(--success)!important;border-color:var(--success)!important}
   .edit-actions{display:flex;gap:8px;margin-top:10px}
-  .btn-save-edit{flex:1;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
-  .btn-cancel-edit{flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:var(--font);font-size:13px;cursor:pointer}
+  .btn-save-edit{flex:1;padding:10px;background:var(--accent);border:none;border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(37,99,235,.25)}
+  .btn-cancel-edit{flex:1;padding:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;color:var(--text2);font-family:var(--font);font-size:13px;cursor:pointer}
 
-  .photo-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px}
-  .no-records{text-align:center;padding:48px 0;color:var(--text2);font-size:14px}
+  /* Photo in admin */
+  .photo-thumb-admin{margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+  .photo-thumb-admin img{width:100%;max-height:200px;object-fit:cover;display:block}
+  .photo-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px;font-weight:500}
+  .photo-link:hover{text-decoration:underline}
+
+  .no-records{text-align:center;padding:48px 0;color:var(--text3);font-size:14px}
   .no-records .icon{font-size:36px;margin-bottom:10px}
-  .btn-clear{width:100%;padding:13px;background:transparent;border:1.5px solid var(--danger);border-radius:12px;color:var(--danger);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
+  .btn-clear{width:100%;padding:12px;background:transparent;border:1.5px solid var(--border2);border-radius:10px;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;transition:all .15s}
+  .btn-clear:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-light)}
+
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:5px;animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 
-  .supp-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;margin-bottom:10px}
-  .supp-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:flex-start;gap:6px;line-height:1.4;color:var(--text2);transition:all .15s}
-  .supp-chip.selected{border-color:var(--accent);background:rgba(79,142,247,.12);color:var(--text)}
-  .supp-chip.selected .chip-code{background:var(--accent);color:#fff}
-  .supp-chip.ok-chip.selected{border-color:var(--success)!important;background:rgba(16,185,129,.1)!important}
-  .supp-chip.ok-chip.selected .chip-code{background:var(--success)!important}
+  /* Supp chips */
+  .supp-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 10px}
+  .supp-chip{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:flex-start;gap:7px;line-height:1.4;color:var(--text2);transition:all .15s}
+  .supp-chip:hover{border-color:var(--accent)}
+  .supp-chip.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+  .supp-chip.selected .chip-code{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .supp-chip.ok-chip.selected{border-color:var(--success)!important;background:var(--success-light)!important;color:var(--success)!important}
+  .supp-chip.ok-chip.selected .chip-code{background:var(--success)!important;border-color:var(--success)!important}
+
+  /* Period other */
+  .period-other{margin-top:8px;display:none}
 </style>
 </head>
 <body>
@@ -216,7 +271,7 @@
   <div id="conn-status" class="conn-badge">⚙ 檢查連線中…</div>
   <div class="date-badge">
     <span>📅</span><strong id="today-display"></strong>
-    <span id="weekday-display" style="color:var(--accent)"></span>
+    <span id="weekday-display"></span>
   </div>
 
   <div class="card">
@@ -226,24 +281,46 @@
     </div>
     <div class="row2">
       <div class="field"><label>處室</label>
-        <select id="dept"><option value="">選擇處室</option><option>教務處</option><option>學務處</option><option>總務處</option><option>輔導處</option><option>圖書館</option></select>
+        <select id="dept">
+          <option value="">選擇處室</option>
+          <option>校長室</option>
+          <option>教務處</option>
+          <option>學務處</option>
+          <option>總務處</option>
+          <option>輔導處</option>
+          <option>圖書館</option>
+        </select>
       </div>
       <div class="field"><label>職稱</label>
-        <select id="role"><option value="">選擇職稱</option><option>主任</option><option>組長</option><option>幹事</option><option>其他</option></select>
+        <select id="role">
+          <option value="">選擇職稱</option>
+          <option>校長</option>
+          <option>主任</option>
+          <option>主任教官</option>
+          <option>組長</option>
+          <option>學創人員</option>
+          <option>幹事</option>
+          <option>其他</option>
+        </select>
       </div>
     </div>
     <div class="field"><label>姓名</label><input type="text" id="patroller" placeholder="輸入姓名" autocomplete="off"></div>
     <div class="row3">
-      <div class="field"><label>民國年</label><input type="number" id="year" min="110" max="120"></div>
+      <div class="field"><label>民國年</label><input type="number" id="year" min="110" max="130"></div>
       <div class="field"><label>月</label><input type="number" id="month" min="1" max="12"></div>
       <div class="field"><label>日</label><input type="number" id="day" min="1" max="31"></div>
     </div>
-    <div class="field"><label>節次</label>
+    <div class="field">
+      <label>節次</label>
       <select id="period">
         <option value="">選擇節次</option>
         <option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option>
-        <option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option>
+        <option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option>
+        <option>午休</option><option>其他</option>
       </select>
+      <div class="period-other" id="period-other-wrap">
+        <input type="text" id="period-other" placeholder="請填寫時段，例：07:30～08:00">
+      </div>
     </div>
   </div>
 
@@ -256,9 +333,9 @@
       <span class="count" id="class-count">0</span><span class="label">班已登記</span>
     </div>
     <div class="class-list" id="class-list"></div>
-    <button class="btn-add-class" id="btn-add-class">＋ 新增班級</button>
+    <button class="btn-add-class" id="btn-add-class" type="button">＋ 新增班級</button>
   </div>
-  <button class="btn-submit" id="submit-btn">✉ 全部送出</button>
+  <button class="btn-submit" id="submit-btn" type="button">✉ 全部送出</button>
 </div>
 
 <!-- 後台頁 -->
@@ -269,20 +346,20 @@
     <div class="stat-box"><div class="stat-num" id="stat-today" style="color:var(--success)">0</div><div class="stat-label">今日班次</div></div>
   </div>
   <div class="admin-actions">
-    <button class="btn-export" id="btn-export">⬇ 匯出 CSV</button>
-    <button class="btn-supplement" id="btn-supp-toggle">＋ 補充漏填班級</button>
+    <button class="btn-export" id="btn-export" type="button">⬇ 匯出 CSV</button>
+    <button class="btn-supplement" id="btn-supp-toggle" type="button">＋ 補充漏填班級</button>
   </div>
 
   <!-- 補充面板 -->
   <div class="supplement-panel" id="supp-panel">
-    <div class="card-title" style="color:var(--accent)">補充漏填班級</div>
+    <div class="card-title" style="color:var(--accent);margin-bottom:12px">補充漏填班級</div>
     <div class="row2" style="margin-bottom:10px">
       <div class="field"><label>選擇日期</label><select id="supp-date"><option value="">選擇日期</option></select></div>
       <div class="field"><label>選擇節次</label>
-        <select id="supp-period"><option value="">選擇節次</option><option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option><option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option></select>
+        <select id="supp-period"><option value="">選擇節次</option><option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option><option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option><option>午休</option><option>其他</option></select>
       </div>
     </div>
-    <div id="supp-info" style="font-size:12px;color:var(--text2);margin-bottom:10px;display:none"></div>
+    <div id="supp-info" style="font-size:12px;color:var(--accent);background:white;border:1px solid #93c5fd;border-radius:7px;padding:8px 12px;margin-bottom:10px;display:none"></div>
     <div class="row2">
       <div class="field"><label>班級名稱</label><input type="text" id="supp-class" placeholder="例：高一忠" autocomplete="off"></div>
       <div class="field"><label>任課老師</label><input type="text" id="supp-teacher" placeholder="老師姓名" autocomplete="off"></div>
@@ -290,10 +367,10 @@
     <div class="row2">
       <div class="field"><label>補充者姓名</label><input type="text" id="supp-patroller" placeholder="輸入姓名" autocomplete="off"></div>
       <div class="field"><label>補充者處室</label>
-        <select id="supp-dept"><option value="">選擇處室</option><option>教務處</option><option>學務處</option><option>總務處</option><option>輔導處</option><option>圖書館</option></select>
+        <select id="supp-dept"><option value="">選擇處室</option><option>校長室</option><option>教務處</option><option>學務處</option><option>總務處</option><option>輔導處</option><option>圖書館</option></select>
       </div>
     </div>
-    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">紀錄代號</label>
+    <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">紀錄代號</label>
     <div class="supp-chip-grid" id="supp-chips">
       <div class="supp-chip" data-code="A"><span class="chip-code">A</span><span>嬉鬧吵雜，管理欠佳</span></div>
       <div class="supp-chip" data-code="B"><span class="chip-code">B</span><span>睡覺人數較多</span></div>
@@ -302,12 +379,12 @@
       <div class="supp-chip" data-code="E"><span class="chip-code">E</span><span>室外課門窗未關</span></div>
       <div class="supp-chip" data-code="F"><span class="chip-code">F</span><span>室外課電源未關</span></div>
       <div class="supp-chip" data-code="G"><span class="chip-code">G</span><span>老師無故未到</span></div>
-      <div class="supp-chip ok-chip" data-code="OK"><span class="chip-code" style="color:var(--success)">✓</span><span>正常上課</span></div>
+      <div class="supp-chip ok-chip" data-code="OK"><span class="chip-code ok-code">✓</span><span>正常上課</span></div>
     </div>
     <div class="field"><label>備註（選填）</label><textarea id="supp-note" placeholder="其他補充說明"></textarea></div>
     <div class="edit-actions">
-      <button class="btn-cancel-edit" id="btn-supp-cancel">取消</button>
-      <button class="btn-save-edit" id="btn-supp-submit">送出補充紀錄</button>
+      <button class="btn-cancel-edit" id="btn-supp-cancel" type="button">取消</button>
+      <button class="btn-save-edit" id="btn-supp-submit" type="button">送出補充紀錄</button>
     </div>
   </div>
 
@@ -315,42 +392,39 @@
     <select id="filter-date"><option value="">全部日期</option></select>
     <select id="filter-dept"><option value="">全部處室</option></select>
   </div>
-  <div class="card" style="padding:13px 15px;">
+  <div class="card" style="padding:13px 15px">
     <div class="card-title"><span class="live-dot"></span>巡堂紀錄</div>
     <div class="record-list" id="record-list"><div class="no-records"><div class="icon">📭</div>尚無紀錄</div></div>
   </div>
-  <button class="btn-clear" id="btn-clear">🗑 清除本機快取</button>
+  <button class="btn-clear" id="btn-clear" type="button">🗑 清除本機快取</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 'use strict';
-
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec';
-const STORAGE_KEY = 'tc2hs_v6';
-const hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
+var GAS_URL     = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec';
+var STORAGE_KEY = 'tc2hs_v7';
+var hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
 function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
 
-// ── 日期 ──────────────────────────────────────
 var WD=['日','一','二','三','四','五','六'];
-function todayROC(){ var d=new Date(); return {roc:d.getFullYear()-1911, m:d.getMonth()+1, d:d.getDate(), w:WD[d.getDay()]}; }
+function todayROC(){ var d=new Date(); return {roc:d.getFullYear()-1911,m:d.getMonth()+1,d:d.getDate(),w:WD[d.getDay()]}; }
 function pad(n){ return String(n).padStart(2,'0'); }
 
-// ── 初始化 ────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function(){
-  var t = todayROC();
-  document.getElementById('today-display').textContent = '民國 '+t.roc+' 年 '+t.m+' 月 '+t.d+' 日';
-  document.getElementById('weekday-display').textContent = '（星期'+t.w+'）';
-  document.getElementById('year').value = t.roc;
-  document.getElementById('month').value = t.m;
-  document.getElementById('day').value = t.d;
+  var t=todayROC();
+  document.getElementById('today-display').textContent='民國 '+t.roc+' 年 '+t.m+' 月 '+t.d+' 日';
+  document.getElementById('weekday-display').textContent='（星期'+t.w+'）';
+  document.getElementById('weekday-display').style.color='var(--accent)';
+  document.getElementById('year').value=t.roc;
+  document.getElementById('month').value=t.m;
+  document.getElementById('day').value=t.d;
 
   updateConnStatus();
   addClassRow();
 
-  // 按鈕事件
   document.getElementById('tab-form').addEventListener('click', function(){ switchTab('form'); });
   document.getElementById('tab-admin').addEventListener('click', function(){ switchTab('admin'); });
   document.getElementById('btn-add-class').addEventListener('click', addClassRow);
@@ -365,6 +439,13 @@ window.addEventListener('DOMContentLoaded', function(){
   document.getElementById('supp-date').addEventListener('change', updateSuppInfo);
   document.getElementById('supp-period').addEventListener('change', updateSuppInfo);
 
+  // 節次「其他」顯示輸入框
+  document.getElementById('period').addEventListener('change', function(){
+    var wrap=document.getElementById('period-other-wrap');
+    wrap.style.display = this.value==='其他' ? 'block' : 'none';
+    if(this.value==='其他') document.getElementById('period-other').focus();
+  });
+
   // 補充面板 chips
   document.querySelectorAll('#supp-chips .supp-chip').forEach(function(c){
     c.addEventListener('click', function(){ c.classList.toggle('selected'); });
@@ -372,211 +453,176 @@ window.addEventListener('DOMContentLoaded', function(){
 });
 
 function updateConnStatus(){
-  var el = document.getElementById('conn-status');
+  var el=document.getElementById('conn-status');
   if(hasGAS()){
     el.textContent='☁ 已連接 Google Sheets，資料同步至雲端';
-    el.style.color='var(--success)'; el.style.borderColor='rgba(16,185,129,.3)'; el.style.background='rgba(16,185,129,.07)';
+    el.style.color='var(--success)'; el.style.borderColor='#6ee7b7'; el.style.background='var(--success-light)';
   }else{
     el.textContent='⚠ 尚未設定 Google Sheets — 資料僅存本機';
-    el.style.color='var(--warn)'; el.style.borderColor='rgba(245,158,11,.3)'; el.style.background='rgba(245,158,11,.07)';
+    el.style.color='var(--warn)'; el.style.borderColor='#fcd34d'; el.style.background='var(--warn-light)';
   }
 }
 
-// ── Tab ───────────────────────────────────────
 function switchTab(tab){
-  document.getElementById('page-form').classList.remove('active');
-  document.getElementById('page-admin').classList.remove('active');
-  document.getElementById('tab-form').classList.remove('active');
-  document.getElementById('tab-admin').classList.remove('active');
+  ['form','admin'].forEach(function(t){
+    document.getElementById('page-'+t).classList.remove('active');
+    document.getElementById('tab-'+t).classList.remove('active');
+  });
   document.getElementById('page-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
   if(tab==='admin') renderAdmin();
 }
 
-// ── 班級列（用 template，不用 innerHTML） ─────
-var rowId = 0;
-
+// ── 班級列 ────────────────────────────────────
+var rowId=0;
 function addClassRow(){
   rowId++;
-  var id = rowId;
-  var tpl = document.getElementById('tpl-row');
-  var clone = tpl.content.cloneNode(true);
-  var row = clone.querySelector('.class-row');
+  var id=rowId;
+  var tpl=document.getElementById('tpl-row');
+  var clone=tpl.content.cloneNode(true);
+  var row=clone.querySelector('.class-row');
 
-  row.dataset.id = id;
-  row.querySelector('.class-row-num').textContent = '班級 ' + id;
+  row.dataset.id=id;
+  row.querySelector('.class-row-num').textContent='班級 '+id;
 
-  // 按鈕
-  var btnSend = row.querySelector('.btn-send-one');
-  btnSend.id = 'send-one-' + id;
+  var btnSend=row.querySelector('.btn-send-one');
+  btnSend.id='send-one-'+id;
   btnSend.addEventListener('click', function(){ sendOne(id); });
 
-  var btnRemove = row.querySelector('.btn-remove');
-  btnRemove.addEventListener('click', function(){ removeRow(id); });
+  row.querySelector('.btn-remove').addEventListener('click', function(){ removeRow(id); });
 
-  // chips
   row.querySelectorAll('.chip').forEach(function(chip){
     chip.addEventListener('click', function(){ toggleChip(chip, row); });
   });
 
   // 照片
-  var photoInput = row.querySelector('.f-photo');
-  var photoPreview = row.querySelector('.photo-preview');
-  var previewImg = row.querySelector('.preview-img');
-  var photoRemove = row.querySelector('.photo-remove');
-
+  var photoInput=row.querySelector('.f-photo');
+  var photoPreview=row.querySelector('.photo-preview');
+  var previewImg=row.querySelector('.preview-img');
   photoInput.addEventListener('change', function(){
-    var file = photoInput.files[0];
-    if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e){
-      previewImg.src = e.target.result;
-      photoPreview.style.display = 'block';
-    };
+    var file=photoInput.files[0]; if(!file) return;
+    var reader=new FileReader();
+    reader.onload=function(e){ previewImg.src=e.target.result; photoPreview.style.display='block'; };
     reader.readAsDataURL(file);
   });
-
-  photoRemove.addEventListener('click', function(){
-    photoInput.value = '';
-    previewImg.src = '';
-    photoPreview.style.display = 'none';
+  row.querySelector('.photo-remove').addEventListener('click', function(){
+    photoInput.value=''; previewImg.src=''; photoPreview.style.display='none';
   });
 
   document.getElementById('class-list').appendChild(row);
   updateCount();
-  setTimeout(function(){ row.scrollIntoView({behavior:'smooth', block:'center'}); }, 100);
+  setTimeout(function(){ row.scrollIntoView({behavior:'smooth',block:'center'}); }, 100);
 }
 
 function removeRow(id){
-  var rows = document.querySelectorAll('.class-row');
-  if(rows.length<=1){ showToast('⚠ 至少保留一個班級','#f59e0b'); return; }
-  var row = document.querySelector('.class-row[data-id="'+id+'"]');
-  if(row) row.remove();
+  if(document.querySelectorAll('.class-row').length<=1){ showToast('⚠ 至少保留一個班級','#d97706'); return; }
+  var r=document.querySelector('.class-row[data-id="'+id+'"]');
+  if(r) r.remove();
   updateCount();
 }
-
-function updateCount(){
-  document.getElementById('class-count').textContent = document.querySelectorAll('.class-row').length;
-}
+function updateCount(){ document.getElementById('class-count').textContent=document.querySelectorAll('.class-row').length; }
 
 function toggleChip(chip, row){
   chip.classList.toggle('selected');
-  var bOn = row.querySelector('[data-code="B"].selected');
-  var gOn = row.querySelector('[data-code="G"].selected');
-  row.querySelector('.extra-b').style.display = bOn ? 'block' : 'none';
-  row.querySelector('.extra-g').style.display = gOn ? 'block' : 'none';
+  row.querySelector('.extra-b').style.display=row.querySelector('[data-code="B"].selected')?'block':'none';
+  row.querySelector('.extra-g').style.display=row.querySelector('[data-code="G"].selected')?'block':'none';
 }
 
-// ── 取得資料 ──────────────────────────────────
+// ── 取得節次（含自訂） ────────────────────────
+function getPeriod(){
+  var p=document.getElementById('period').value;
+  if(p==='其他'){
+    var other=document.getElementById('period-other').value.trim();
+    return other ? '其他（'+other+'）' : '其他';
+  }
+  return p;
+}
+
 function getBaseInfo(){
-  var y = document.getElementById('year').value;
-  var m = document.getElementById('month').value;
-  var d = document.getElementById('day').value;
+  var y=document.getElementById('year').value, m=document.getElementById('month').value, d=document.getElementById('day').value;
   return {
-    patroller: document.getElementById('patroller').value.trim(),
-    dept: document.getElementById('dept').value,
-    role: document.getElementById('role').value,
-    year: String(y), month: String(m), day: String(d),
-    period: document.getElementById('period').value,
-    dateStr: y+'/'+pad(m)+'/'+pad(d)
+    patroller:document.getElementById('patroller').value.trim(),
+    dept:document.getElementById('dept').value,
+    role:document.getElementById('role').value,
+    year:String(y), month:String(m), day:String(d),
+    period:getPeriod(),
+    dateStr:y+'/'+pad(m)+'/'+pad(d)
   };
 }
 
 function buildRecord(row, base, cb){
-  var violations = [];
-  row.querySelectorAll('.chip.selected').forEach(function(c){ violations.push(c.dataset.code); });
-  var photoInput = row.querySelector('.f-photo');
-  var file = photoInput.files[0];
-
-  var rec = Object.assign({}, base, {
-    id: Date.now() + Math.random(),
-    ts: new Date().toISOString(),
-    className: row.querySelector('.f-class').value.trim(),
-    teacher: row.querySelector('.f-teacher').value.trim(),
-    violations: violations,
-    sleepCount: violations.indexOf('B')>=0 ? row.querySelector('.f-sleep').value : '',
-    absentTime: violations.indexOf('G')>=0 ? row.querySelector('.f-absent').value.trim() : '',
-    note: row.querySelector('.f-note').value.trim(),
-    photoBase64: '', photoMime: '', photoName: ''
+  var viols=[];
+  row.querySelectorAll('.chip.selected').forEach(function(c){ viols.push(c.dataset.code); });
+  var file=row.querySelector('.f-photo').files[0];
+  var rec=Object.assign({}, base, {
+    id:Date.now()+Math.random(), ts:new Date().toISOString(),
+    className:row.querySelector('.f-class').value.trim(),
+    teacher:row.querySelector('.f-teacher').value.trim(),
+    violations:viols,
+    sleepCount:viols.indexOf('B')>=0 ? row.querySelector('.f-sleep').value : '',
+    absentTime:viols.indexOf('G')>=0 ? row.querySelector('.f-absent').value.trim() : '',
+    note:row.querySelector('.f-note').value.trim(),
+    photoBase64:'', photoMime:'', photoName:''
   });
-
   if(file){
-    var reader = new FileReader();
-    reader.onload = function(e){
-      rec.photoBase64 = e.target.result.split(',')[1];
-      rec.photoMime = file.type;
-      rec.photoName = file.name;
-      cb(rec);
-    };
+    var reader=new FileReader();
+    reader.onload=function(e){ rec.photoBase64=e.target.result.split(',')[1]; rec.photoMime=file.type; rec.photoName=file.name; cb(rec); };
     reader.readAsDataURL(file);
-  } else {
-    cb(rec);
-  }
+  } else { cb(rec); }
 }
 
-async function postRecord(rec){
-  if(!hasGAS()) return;
-  try{
-    await fetch(GAS_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(rec)});
-  }catch(e){}
+function postRecord(rec){
+  if(!hasGAS()) return Promise.resolve();
+  // 後台照片顯示：把 base64 存為 dataUrl 備用
+  return fetch(GAS_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(rec)}).catch(function(){});
 }
 
-// ── 立即送出單班 ──────────────────────────────
 function sendOne(id){
-  var base = getBaseInfo();
-  if(!base.patroller||!base.period){ showToast('⚠ 請先填寫姓名與節次','#ef4444'); return; }
-  var row = document.querySelector('.class-row[data-id="'+id+'"]');
-  if(!row.querySelector('.f-class').value.trim()){ showToast('⚠ 請填寫班級名稱','#ef4444'); return; }
-  var btn = document.getElementById('send-one-'+id);
-  btn.textContent = '☁ 送出中…'; btn.disabled = true;
-
+  var base=getBaseInfo();
+  if(!base.patroller||!base.period){ showToast('⚠ 請先填寫姓名與節次','#dc2626'); return; }
+  var row=document.querySelector('.class-row[data-id="'+id+'"]');
+  if(!row.querySelector('.f-class').value.trim()){ showToast('⚠ 請填寫班級名稱','#dc2626'); return; }
+  var btn=document.getElementById('send-one-'+id);
+  btn.textContent='☁ 送出中…'; btn.disabled=true;
   buildRecord(row, base, function(rec){
-    var arr = getLocal(); arr.unshift(rec); saveLocal(arr);
+    var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
     postRecord(rec);
-    btn.textContent = '✓ 已送出'; btn.classList.add('done');
+    btn.textContent='✓ 已送出'; btn.classList.add('done');
     showToast('✓ '+rec.className+' 已送出！');
   });
 }
 
-// ── 全部送出 ──────────────────────────────────
 function submitAll(){
-  var base = getBaseInfo();
-  if(!base.patroller||!base.period){ showToast('⚠ 請填寫姓名與節次','#ef4444'); return; }
-  var classRows = document.querySelectorAll('.class-row');
-  var allFilled = true;
-  classRows.forEach(function(row){
-    if(!row.querySelector('.f-class').value.trim()){ allFilled=false; row.querySelector('.f-class').focus(); }
-  });
-  if(!allFilled){ showToast('⚠ 有班級名稱未填寫','#ef4444'); return; }
+  var base=getBaseInfo();
+  if(!base.patroller||!base.period){ showToast('⚠ 請填寫姓名與節次','#dc2626'); return; }
+  var classRows=document.querySelectorAll('.class-row');
+  var ok=true;
+  classRows.forEach(function(r){ if(!r.querySelector('.f-class').value.trim()){ ok=false; r.querySelector('.f-class').focus(); } });
+  if(!ok){ showToast('⚠ 有班級名稱未填寫','#dc2626'); return; }
 
-  var btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = '☁ 同步中…';
+  var btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='☁ 同步中…';
 
-  var pending = [];
+  var pending=[];
   classRows.forEach(function(row){
-    var btnOne = document.getElementById('send-one-'+row.dataset.id);
-    if(btnOne && btnOne.classList.contains('done')) return;
+    var b=document.getElementById('send-one-'+row.dataset.id);
+    if(b&&b.classList.contains('done')) return;
     pending.push(row);
   });
 
-  if(pending.length===0){
+  if(!pending.length){
     showToast('✓ 所有班級已逐一送出！');
     btn.disabled=false; btn.textContent='✉ 全部送出';
     resetForm(); return;
   }
 
-  var done = 0;
-  var records = [];
+  var records=[], done=0;
   pending.forEach(function(row){
     buildRecord(row, base, function(rec){
-      records.push(rec);
-      done++;
+      records.push(rec); done++;
       if(done===pending.length){
-        var arr = getLocal();
-        records.forEach(function(r){ arr.unshift(r); });
-        saveLocal(arr);
-        var posts = records.map(function(r){ return postRecord(r); });
-        Promise.all(posts).then(function(){
+        var arr=getLocal(); records.forEach(function(r){ arr.unshift(r); }); saveLocal(arr);
+        Promise.all(records.map(postRecord)).then(function(){
           showToast('✓ '+records.length+' 班紀錄已同步！');
           btn.disabled=false; btn.textContent='✉ 全部送出';
           resetForm();
@@ -588,70 +634,62 @@ function submitAll(){
 
 function resetForm(){
   document.getElementById('period').value='';
+  document.getElementById('period-other-wrap').style.display='none';
+  document.getElementById('period-other').value='';
   document.getElementById('class-list').innerHTML='';
   rowId=0; addClassRow(); updateCount();
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── 補充漏填 ──────────────────────────────────
 function toggleSupp(){
-  var panel = document.getElementById('supp-panel');
-  var open = panel.classList.toggle('open');
+  var panel=document.getElementById('supp-panel');
+  var open=panel.classList.toggle('open');
   if(open){
-    var records = getLocal();
-    var dates = [];
-    records.forEach(function(r){ if(dates.indexOf(r.dateStr)<0) dates.push(r.dateStr); });
+    var dates=[];
+    getLocal().forEach(function(r){ if(r.dateStr&&dates.indexOf(r.dateStr)<0) dates.push(r.dateStr); });
     dates.sort().reverse();
-    var sel = document.getElementById('supp-date');
-    sel.innerHTML = '<option value="">選擇日期</option>';
+    var sel=document.getElementById('supp-date');
+    sel.innerHTML='<option value="">選擇日期</option>';
     dates.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
-    var t=todayROC();
-    var todayStr=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
-    if(dates.indexOf(todayStr)>=0) sel.value=todayStr;
+    var t=todayROC(), ts=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
+    if(dates.indexOf(ts)>=0) sel.value=ts;
     updateSuppInfo();
-    panel.scrollIntoView({behavior:'smooth', block:'start'});
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
   }
 }
 
 function updateSuppInfo(){
-  var date = document.getElementById('supp-date').value;
-  var period = document.getElementById('supp-period').value;
-  var info = document.getElementById('supp-info');
+  var date=document.getElementById('supp-date').value;
+  var period=document.getElementById('supp-period').value;
+  var info=document.getElementById('supp-info');
   if(!date||!period){ info.style.display='none'; return; }
-  var records = getLocal();
-  var existing = records.filter(function(r){ return r.dateStr===date && r.period===period; });
-  info.style.display = 'block';
-  if(existing.length>0){
-    info.textContent = date+' '+period+' 目前已有 '+existing.length+' 班（'+existing.map(function(r){return r.className;}).join('、')+'）';
-  } else {
-    info.textContent = date+' '+period+' 尚無紀錄';
-  }
+  var existing=getLocal().filter(function(r){ return r.dateStr===date&&r.period===period; });
+  info.style.display='block';
+  info.textContent = existing.length
+    ? date+' '+period+' 目前已有 '+existing.length+' 班（'+existing.map(function(r){return r.className;}).join('、')+'）'
+    : date+' '+period+' 尚無紀錄';
 }
 
 function submitSupp(){
-  var date = document.getElementById('supp-date').value;
-  var period = document.getElementById('supp-period').value;
-  var className = document.getElementById('supp-class').value.trim();
-  var patroller = document.getElementById('supp-patroller').value.trim();
-  if(!date||!period||!className||!patroller){ showToast('⚠ 請填寫日期、節次、班級與姓名','#ef4444'); return; }
-
-  var violations = [];
-  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ violations.push(c.dataset.code); });
-  var parts = date.split('/');
-  var rec = {
-    id: Date.now()+Math.random(), ts: new Date().toISOString(),
-    dateStr: date, year: parts[0]||'', month: parts[1]||'', day: parts[2]||'',
-    period: period, className: className,
-    teacher: document.getElementById('supp-teacher').value.trim(),
-    patroller: patroller,
-    dept: document.getElementById('supp-dept').value,
-    role: '補充', violations: violations,
-    sleepCount:'', absentTime:'',
-    note: document.getElementById('supp-note').value.trim(),
-    isSupp: true
+  var date=document.getElementById('supp-date').value;
+  var period=document.getElementById('supp-period').value;
+  var className=document.getElementById('supp-class').value.trim();
+  var patroller=document.getElementById('supp-patroller').value.trim();
+  if(!date||!period||!className||!patroller){ showToast('⚠ 請填寫日期、節次、班級與姓名','#dc2626'); return; }
+  var viols=[];
+  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ viols.push(c.dataset.code); });
+  var parts=date.split('/');
+  var rec={
+    id:Date.now()+Math.random(), ts:new Date().toISOString(),
+    dateStr:date, year:parts[0]||'', month:parts[1]||'', day:parts[2]||'',
+    period:period, className:className,
+    teacher:document.getElementById('supp-teacher').value.trim(),
+    patroller:patroller, dept:document.getElementById('supp-dept').value,
+    role:'補充', violations:viols, sleepCount:'', absentTime:'',
+    note:document.getElementById('supp-note').value.trim(), isSupp:true
   };
-
-  var arr = getLocal(); arr.unshift(rec); saveLocal(arr);
+  var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
   postRecord(rec);
   showToast('✓ 已補充 '+className+' 的紀錄！');
   document.getElementById('supp-class').value='';
@@ -662,86 +700,78 @@ function submitSupp(){
   renderAdmin();
 }
 
-// ── Toast ─────────────────────────────────────
-function showToast(msg, bg){
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.style.background = bg||'#10b981';
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+function showToast(msg,bg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=bg||'var(--success)';
+  t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },3000);
 }
 
 // ── 後台 ──────────────────────────────────────
-var VC = {A:'嬉鬧吵雜',B:'睡覺較多',C:'3C違規',D:'環境髒亂',E:'門窗未關',F:'電源未關',G:'老師缺席',OK:'正常上課'};
-var CHIPS_DEF = [
+var VC={A:'嬉鬧吵雜',B:'睡覺較多',C:'3C違規',D:'環境髒亂',E:'門窗未關',F:'電源未關',G:'老師缺席',OK:'正常上課'};
+var CHIPS_DEF=[
   {code:'A',label:'嬉鬧吵雜，管理欠佳'},{code:'B',label:'睡覺人數較多'},
   {code:'C',label:'不當使用手機/3C'},{code:'D',label:'教室走廊髒亂'},
   {code:'E',label:'室外課門窗未關'},{code:'F',label:'室外課電源未關'},
   {code:'G',label:'老師無故未到'},{code:'OK',label:'正常上課'},
 ];
-
 function getViols(r){ return Array.isArray(r.violations)?r.violations:(r.violations||'').split('+').filter(Boolean); }
 
 async function renderAdmin(){
-  var records = [];
+  var records=[];
   if(hasGAS()){
     document.getElementById('record-list').innerHTML='<div class="no-records"><div class="icon">☁</div>雲端載入中…</div>';
     try{
-      var res = await fetch(GAS_URL+'?action=getAll');
-      var json = await res.json();
-      records = json.records||[]; saveLocal(records);
-    }catch(e){ records=getLocal(); showToast('⚠ 雲端讀取失敗，顯示本機資料','#f59e0b'); }
+      var res=await fetch(GAS_URL+'?action=getAll');
+      var json=await res.json();
+      records=json.records||[]; saveLocal(records);
+    }catch(e){ records=getLocal(); showToast('⚠ 雲端讀取失敗，顯示本機資料','#d97706'); }
   }else{ records=getLocal(); }
 
-  var fd = document.getElementById('filter-date').value;
-  var fde = document.getElementById('filter-dept').value;
-
-  var dates=[]; var depts=[];
+  var fd=document.getElementById('filter-date').value;
+  var fde=document.getElementById('filter-dept').value;
+  var dates=[],depts=[];
   records.forEach(function(r){
-    if(r.dateStr && dates.indexOf(r.dateStr)<0) dates.push(r.dateStr);
-    if(r.dept && depts.indexOf(r.dept)<0) depts.push(r.dept);
+    if(r.dateStr&&dates.indexOf(r.dateStr)<0) dates.push(r.dateStr);
+    if(r.dept&&depts.indexOf(r.dept)<0) depts.push(r.dept);
   });
   dates.sort().reverse();
-  updateFilter('filter-date', dates, fd);
-  updateFilter('filter-dept', depts, fde);
+  updateFilter('filter-date',dates,fd); updateFilter('filter-dept',depts,fde);
 
-  var filtered = records.filter(function(r){ return (!fd||r.dateStr===fd)&&(!fde||r.dept===fde); });
-  var t=todayROC();
-  var todayStr=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
-
+  var filtered=records.filter(function(r){ return (!fd||r.dateStr===fd)&&(!fde||r.dept===fde); });
+  var t=todayROC(), ts=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
   document.getElementById('stat-total').textContent=records.length;
   document.getElementById('stat-violation').textContent=records.filter(function(r){var v=getViols(r);return v.length&&!v.every(function(x){return x==='OK';});}).length;
-  document.getElementById('stat-today').textContent=records.filter(function(r){return r.dateStr===todayStr;}).length;
+  document.getElementById('stat-today').textContent=records.filter(function(r){return r.dateStr===ts;}).length;
 
-  var list = document.getElementById('record-list');
+  var list=document.getElementById('record-list');
   if(!filtered.length){ list.innerHTML='<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>'; return; }
-
   list.innerHTML='';
-  filtered.forEach(function(r, i){ list.appendChild(buildRecordItem(r, i, filtered)); });
+  filtered.forEach(function(r,i){ list.appendChild(buildItem(r,i)); });
 }
 
-function buildRecordItem(r, i, filtered){
-  var viols = getViols(r);
-  var hasV = viols.length && !viols.every(function(v){return v==='OK';});
-  var time = r.ts ? new Date(r.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}) : (r.tsDisplay||'');
+function buildItem(r,i){
+  var viols=getViols(r);
+  var hasV=viols.length&&!viols.every(function(v){return v==='OK';});
+  var time=r.ts?new Date(r.ts).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}):(r.tsDisplay||'');
 
-  var item = document.createElement('div');
-  item.className = 'record-item' + (hasV?' has-violation':'');
+  var item=document.createElement('div');
+  item.className='record-item'+(hasV?' has-violation':'');
 
   // Meta
-  var meta = document.createElement('div'); meta.className='record-meta';
-  var left = document.createElement('div');
-  var cls = document.createElement('div'); cls.className='record-class'; cls.textContent=(r.period||'')+'｜'+(r.className||''); left.appendChild(cls);
-  var inf = document.createElement('div'); inf.className='record-info'; inf.textContent=(r.dateStr||'')+' · 任課：'+(r.teacher||'—'); left.appendChild(inf);
-  var right = document.createElement('div'); right.style.textAlign='right';
-  var rt = document.createElement('div'); rt.className='record-time'; rt.textContent=time; right.appendChild(rt);
-  var ri = document.createElement('div'); ri.className='record-info'; ri.textContent=(r.dept||'')+' '+(r.role||'')+' '+(r.patroller||''); right.appendChild(ri);
+  var meta=document.createElement('div'); meta.className='record-meta';
+  var left=document.createElement('div');
+  var rc=document.createElement('div'); rc.className='record-class'; rc.textContent=(r.period||'')+'｜'+(r.className||''); left.appendChild(rc);
+  var ri=document.createElement('div'); ri.className='record-info'; ri.textContent=(r.dateStr||'')+' · 任課：'+(r.teacher||'—'); left.appendChild(ri);
+  var right=document.createElement('div'); right.style.textAlign='right';
+  var rt=document.createElement('div'); rt.className='record-time'; rt.textContent=time; right.appendChild(rt);
+  var ri2=document.createElement('div'); ri2.className='record-info'; ri2.textContent=(r.dept||'')+' '+(r.role||'')+' '+(r.patroller||''); right.appendChild(ri2);
   meta.appendChild(left); meta.appendChild(right); item.appendChild(meta);
 
   // Tags
-  if(r.isSupp || viols.length){
-    var tags = document.createElement('div'); tags.className='violation-tags';
+  if(r.isSupp||viols.length){
+    var tags=document.createElement('div'); tags.className='violation-tags';
     if(r.isSupp){ var s=document.createElement('span'); s.className='vtag supp'; s.textContent='補充'; tags.appendChild(s); }
-    viols.forEach(function(v){ var span=document.createElement('span'); span.className='vtag'+(v==='OK'?' ok':''); span.textContent=v+'·'+(VC[v]||v); tags.appendChild(span); });
+    viols.forEach(function(v){ var sp=document.createElement('span'); sp.className='vtag'+(v==='OK'?' ok':''); sp.textContent=v+'·'+(VC[v]||v); tags.appendChild(sp); });
     item.appendChild(tags);
   }
 
@@ -752,28 +782,35 @@ function buildRecordItem(r, i, filtered){
   if(r.note) notes.push(r.note);
   if(notes.length){ var nd=document.createElement('div'); nd.style.cssText='font-size:12px;color:var(--text2);margin-top:4px'; nd.textContent=notes.join('｜'); item.appendChild(nd); }
 
-  // Photo
-  if(r.photoUrl){ var pa=document.createElement('a'); pa.className='photo-link'; pa.href=r.photoUrl; pa.target='_blank'; pa.textContent='📷 查看照片'; item.appendChild(pa); }
+  // 照片顯示：優先用 base64 預覽，其次用 photoUrl 連結
+  if(r.photoBase64){
+    var thumb=document.createElement('div'); thumb.className='photo-thumb-admin';
+    var img=document.createElement('img'); img.src='data:'+(r.photoMime||'image/jpeg')+';base64,'+r.photoBase64; img.alt='巡堂照片';
+    thumb.appendChild(img); item.appendChild(thumb);
+  } else if(r.photoUrl){
+    var pa=document.createElement('a'); pa.className='photo-link'; pa.href=r.photoUrl; pa.target='_blank'; pa.textContent='📷 查看照片';
+    item.appendChild(pa);
+  }
 
-  // Action buttons
-  var btns = document.createElement('div'); btns.className='record-btns';
-  var btnEdit = document.createElement('button'); btnEdit.className='btn-edit-rec'; btnEdit.textContent='✏ 修改';
-  var btnDel = document.createElement('button'); btnDel.className='btn-del-rec'; btnDel.textContent='🗑 刪除';
+  // Buttons
+  var btns=document.createElement('div'); btns.className='record-btns';
+  var btnEdit=document.createElement('button'); btnEdit.className='btn-edit-rec'; btnEdit.textContent='✏ 修改'; btnEdit.type='button';
+  var btnDel=document.createElement('button'); btnDel.className='btn-del-rec'; btnDel.textContent='🗑 刪除'; btnDel.type='button';
   btns.appendChild(btnEdit); btns.appendChild(btnDel); item.appendChild(btns);
 
   // Edit panel
-  var ep = document.createElement('div'); ep.className='edit-panel';
-
-  var r2 = document.createElement('div'); r2.className='row2'; r2.style.marginBottom='10px';
-  var fc = document.createElement('div'); fc.className='field'; fc.innerHTML='<label>班級名稱</label>'; var ic=document.createElement('input'); ic.type='text'; ic.value=r.className||''; fc.appendChild(ic); r2.appendChild(fc);
-  var ft = document.createElement('div'); ft.className='field'; ft.innerHTML='<label>任課老師</label>'; var it=document.createElement('input'); it.type='text'; it.value=r.teacher||''; ft.appendChild(it); r2.appendChild(ft);
+  var ep=document.createElement('div'); ep.className='edit-panel';
+  var r2=document.createElement('div'); r2.className='row2'; r2.style.marginBottom='10px';
+  var fc=document.createElement('div'); fc.className='field'; var lc=document.createElement('label'); lc.textContent='班級名稱'; fc.appendChild(lc);
+  var ic=document.createElement('input'); ic.type='text'; ic.value=r.className||''; fc.appendChild(ic); r2.appendChild(fc);
+  var ft=document.createElement('div'); ft.className='field'; var lt=document.createElement('label'); lt.textContent='任課老師'; ft.appendChild(lt);
+  var it=document.createElement('input'); it.type='text'; it.value=r.teacher||''; ft.appendChild(it); r2.appendChild(ft);
   ep.appendChild(r2);
 
-  var cl = document.createElement('label'); cl.style.cssText='font-size:12px;color:var(--text2);display:block;margin-bottom:4px'; cl.textContent='紀錄代號'; ep.appendChild(cl);
-  var cg = document.createElement('div'); cg.className='edit-chip-grid';
+  var cl=document.createElement('label'); cl.style.cssText='font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px'; cl.textContent='紀錄代號'; ep.appendChild(cl);
+  var cg=document.createElement('div'); cg.className='edit-chip-grid';
   CHIPS_DEF.forEach(function(def){
-    var c=document.createElement('div'); c.className='edit-chip'+(def.code==='OK'?' ok-chip':'')+(viols.indexOf(def.code)>=0?' selected':'');
-    c.dataset.code=def.code;
+    var c=document.createElement('div'); c.className='edit-chip'+(def.code==='OK'?' ok-chip':'')+(viols.indexOf(def.code)>=0?' selected':''); c.dataset.code=def.code;
     var cs=document.createElement('span'); cs.className='chip-code'; if(def.code==='OK') cs.style.color='var(--success)'; cs.textContent=def.code; c.appendChild(cs);
     var cl2=document.createElement('span'); cl2.textContent=def.label; c.appendChild(cl2);
     c.addEventListener('click',function(){c.classList.toggle('selected');});
@@ -781,69 +818,57 @@ function buildRecordItem(r, i, filtered){
   });
   ep.appendChild(cg);
 
-  var fn = document.createElement('div'); fn.className='field'; fn.innerHTML='<label>備註</label>'; var ta=document.createElement('textarea'); ta.value=r.note||''; fn.appendChild(ta); ep.appendChild(fn);
+  var fn=document.createElement('div'); fn.className='field'; var ln=document.createElement('label'); ln.textContent='備註'; fn.appendChild(ln);
+  var ta=document.createElement('textarea'); ta.value=r.note||''; fn.appendChild(ta); ep.appendChild(fn);
 
-  var ea = document.createElement('div'); ea.className='edit-actions';
-  var bc = document.createElement('button'); bc.className='btn-cancel-edit'; bc.textContent='取消';
-  var bs = document.createElement('button'); bs.className='btn-save-edit'; bs.textContent='儲存修改';
-  ea.appendChild(bc); ea.appendChild(bs); ep.appendChild(ea);
-  item.appendChild(ep);
+  var ea=document.createElement('div'); ea.className='edit-actions';
+  var bc=document.createElement('button'); bc.className='btn-cancel-edit'; bc.textContent='取消'; bc.type='button';
+  var bs=document.createElement('button'); bs.className='btn-save-edit'; bs.textContent='儲存修改'; bs.type='button';
+  ea.appendChild(bc); ea.appendChild(bs); ep.appendChild(ea); item.appendChild(ep);
 
   // Events
-  btnEdit.addEventListener('click', function(){
-    var open = ep.classList.toggle('open');
-    item.classList.toggle('editing', open);
+  btnEdit.addEventListener('click',function(){
+    var open=ep.classList.toggle('open'); item.classList.toggle('editing',open);
   });
-  bc.addEventListener('click', function(){ ep.classList.remove('open'); item.classList.remove('editing'); });
-  bs.addEventListener('click', function(){
-    var records = getLocal();
-    var idx = records.findIndex(function(x){ return x.id===r.id; });
+  bc.addEventListener('click',function(){ ep.classList.remove('open'); item.classList.remove('editing'); });
+  bs.addEventListener('click',function(){
+    var recs=getLocal(); var idx=recs.findIndex(function(x){return x.id===r.id;});
     if(idx===-1) return;
-    var newViols = []; cg.querySelectorAll('.edit-chip.selected').forEach(function(c){ newViols.push(c.dataset.code); });
-    records[idx] = Object.assign({}, records[idx], {className:ic.value.trim(), teacher:it.value.trim(), violations:newViols, note:ta.value.trim(), editedAt:new Date().toISOString()});
-    saveLocal(records);
-    showToast('✓ 修改已儲存');
-    renderAdmin();
+    var nv=[]; cg.querySelectorAll('.edit-chip.selected').forEach(function(c){nv.push(c.dataset.code);});
+    recs[idx]=Object.assign({},recs[idx],{className:ic.value.trim(),teacher:it.value.trim(),violations:nv,note:ta.value.trim(),editedAt:new Date().toISOString()});
+    saveLocal(recs); showToast('✓ 修改已儲存'); renderAdmin();
   });
-  btnDel.addEventListener('click', function(){
+  btnDel.addEventListener('click',function(){
     if(!confirm('確定要刪除這筆紀錄嗎？')) return;
-    var records = getLocal().filter(function(x){ return x.id!==r.id; });
-    saveLocal(records);
-    showToast('已刪除紀錄','#6b7280');
-    renderAdmin();
+    saveLocal(getLocal().filter(function(x){return x.id!==r.id;}));
+    showToast('已刪除紀錄','#64748b'); renderAdmin();
   });
 
   return item;
 }
 
-function updateFilter(id, options, current){
-  var sel = document.getElementById(id);
-  var first = sel.options[0].outerHTML;
-  sel.innerHTML = first;
+function updateFilter(id,options,current){
+  var sel=document.getElementById(id);
+  var first=sel.options[0].outerHTML; sel.innerHTML=first;
   options.forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(o===current) opt.selected=true; sel.appendChild(opt); });
 }
 
 function exportCSV(){
-  var records = getLocal();
-  if(!records.length){ showToast('⚠ 尚無資料','#f59e0b'); return; }
-  var headers = ['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','照片連結','送出時間'];
-  var rows = records.map(function(r){
-    var v = Array.isArray(r.violations)?r.violations.join('+'):(r.violations||'');
+  var records=getLocal(); if(!records.length){ showToast('⚠ 尚無資料','#d97706'); return; }
+  var headers=['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','照片連結','送出時間'];
+  var rows=records.map(function(r){
+    var v=Array.isArray(r.violations)?r.violations.join('+'):(r.violations||'');
     return [r.dateStr,r.period,r.className,r.teacher,r.dept,r.role,r.patroller,v,r.sleepCount,r.absentTime,r.note,r.isSupp?'補充':'',r.photoUrl||'',r.ts?new Date(r.ts).toLocaleString('zh-TW'):'']
-      .map(function(x){ return '"'+(String(x||'')).replace(/"/g,'""')+'"'; }).join(',');
+      .map(function(x){return '"'+String(x||'').replace(/"/g,'""')+'"';}).join(',');
   });
-  var csv = '\uFEFF' + [headers.join(',')].concat(rows).join('\n');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = '巡堂紀錄_'+new Date().toLocaleDateString('zh-TW')+'.csv';
-  a.click();
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+[headers.join(',')].concat(rows).join('\n')],{type:'text/csv;charset=utf-8;'}));
+  a.download='巡堂紀錄_'+new Date().toLocaleDateString('zh-TW')+'.csv'; a.click();
 }
 
 function clearAll(){
-  if(!confirm('確定要清除本機快取嗎？（Google Sheets 資料不受影響）')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  renderAdmin();
-  showToast('已清除本機快取','#6b7280');
+  if(!confirm('確定要清除本機快取嗎？')) return;
+  localStorage.removeItem(STORAGE_KEY); renderAdmin(); showToast('已清除本機快取','#64748b');
 }
 </script>
 </body>
