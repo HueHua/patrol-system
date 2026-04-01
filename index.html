@@ -590,11 +590,10 @@ function buildRecord(row, base, cb){
   } else { cb(rec); }
 }
 
-function postRecord(rec){
+function postRecord(rec, retries){
   if(!hasGAS()) return Promise.resolve(null);
+  retries = retries===undefined ? 2 : retries;
   var slim=Object.assign({}, rec, {photoBase64:'', photoDataUrl:''});
-  // 用 no-cors 確保 POST 一定送得到（不受 CORS 限制）
-  // no-cors 模式無法取得回應，所以直接回傳 {status:'ok'}
   return fetch(GAS_URL, {
     method:'POST',
     mode:'no-cors',
@@ -603,8 +602,13 @@ function postRecord(rec){
   }).then(function(){
     return {status:'ok'};
   }).catch(function(e){
-    console.error('postRecord error:', e);
-    return null;
+    if(retries > 0){
+      // 等 1.5 秒後重試
+      return new Promise(function(resolve){
+        setTimeout(function(){ resolve(postRecord(rec, retries-1)); }, 1500);
+      });
+    }
+    return {status:'error'};
   });
 }
 
@@ -617,21 +621,37 @@ function sendOne(id){
   btn.textContent='☁ 送出中…'; btn.disabled=true;
   buildRecord(row, base, function(rec){
     var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
-    btn.textContent='☁ 同步中…';
-    postRecord(rec).then(function(res){
-      if(res && res.status==='ok'){
-        if(res.photoUrl){
-          var recs=getLocal();
-          var idx=recs.findIndex(function(r){return r.id===rec.id;});
-          if(idx>=0){ recs[idx].photoUrl=res.photoUrl; saveLocal(recs); }
+    // 標示送出中
+    btn.textContent='☁ 送出中…'; btn.disabled=true;
+    btn.style.borderColor=''; btn.style.color='';
+    var row2=document.querySelector('.class-row[data-id="'+id+'"]');
+    if(row2) row2.style.borderColor='#93c5fd';
+
+    var attempt=0;
+    function tryPost(){
+      attempt++;
+      if(attempt>1) btn.textContent='↻ 重試 '+attempt+'/3…';
+      postRecord(rec, 0).then(function(res){
+        if(res && res.status==='ok'){
+          btn.textContent='✓ 已送出';
+          btn.classList.add('done');
+          btn.style.borderColor='var(--success)';
+          btn.style.color='var(--success)';
+          if(row2) row2.style.borderColor='var(--success)';
+          showToast('✓ '+rec.className+' 已送出！');
+        } else if(attempt < 3){
+          setTimeout(tryPost, 1500);
+        } else {
+          btn.textContent='⚠ 送出失敗 — 點此重試';
+          btn.disabled=false;
+          btn.style.borderColor='var(--danger)';
+          btn.style.color='var(--danger)';
+          if(row2) row2.style.borderColor='var(--danger)';
+          showToast('⚠ '+rec.className+' 送出失敗，請點按鈕重試','#dc2626');
         }
-        btn.textContent='✓ 已送出'; btn.classList.add('done');
-        showToast('✓ '+rec.className+' 已同步至雲端！');
-      } else {
-        btn.textContent='⚠ 同步失敗'; btn.disabled=false;
-        showToast('⚠ '+rec.className+' 雲端同步失敗，請重試','#d97706');
-      }
-    });
+      });
+    }
+    tryPost();
   });
 }
 
@@ -659,26 +679,50 @@ function submitAll(){
     resetForm(); return;
   }
 
-  var records=[], done=0;
+  // 先收集所有班級記錄
+  var items=[], built=0;
   pending.forEach(function(row){
     buildRecord(row, base, function(rec){
-      records.push(rec); done++;
-      if(done===pending.length){
-        var arr=getLocal(); records.forEach(function(r){ arr.unshift(r); }); saveLocal(arr);
-        Promise.all(records.map(postRecord)).then(function(results){
-          var recs=getLocal();
-          records.forEach(function(rec,i){
-            var res=results?results[i]:null;
-            if(res && res.photoUrl){
-              var idx=recs.findIndex(function(r){return r.id===rec.id;});
-              if(idx>=0){ recs[idx].photoUrl=res.photoUrl; }
+      items.push({rec:rec, row:row}); built++;
+      if(built===pending.length){
+        // 先全部存入本機
+        var arr=getLocal();
+        items.forEach(function(item){ arr.unshift(item.rec); });
+        saveLocal(arr);
+        // 逐班依序送出，避免 GAS 同時收到太多請求
+        var successCount=0, failCount=0, total=items.length;
+        function sendNext(i){
+          if(i>=total){
+            if(failCount===0){
+              showToast('✓ 全部 '+total+' 班已同步完成！');
+              resetForm();
+            } else {
+              showToast('⚠ '+successCount+' 班成功，'+failCount+' 班失敗，請重試紅框班級','#dc2626');
             }
+            btn.disabled=false; btn.textContent='✉ 全部送出';
+            return;
+          }
+          var item=items[i];
+          var rowEl=item.row;
+          var btnOne=document.getElementById('send-one-'+rowEl.dataset.id);
+          btn.textContent='☁ 第 '+(i+1)+'/'+total+' 班送出中…';
+          rowEl.style.outline='2px solid #93c5fd';
+          // 單筆送出（不重試，由函式本身控制）
+          postRecord(item.rec, 0).then(function(res){
+            if(res && res.status==='ok'){
+              successCount++;
+              rowEl.style.outline='2px solid var(--success)';
+              if(btnOne){ btnOne.textContent='✓ 已送出'; btnOne.classList.add('done'); btnOne.disabled=true; }
+            } else {
+              failCount++;
+              rowEl.style.outline='2px solid var(--danger)';
+              if(btnOne){ btnOne.textContent='⚠ 失敗，點此重試'; btnOne.style.color='var(--danger)'; btnOne.style.borderColor='var(--danger)'; btnOne.disabled=false; }
+            }
+            // 每班間隔 800ms，給 GAS 處理時間
+            setTimeout(function(){ sendNext(i+1); }, 800);
           });
-          saveLocal(recs);
-          showToast('✓ '+records.length+' 班紀錄已同步！');
-          btn.disabled=false; btn.textContent='✉ 全部送出';
-          resetForm();
-        });
+        }
+        sendNext(0);
       }
     });
   });
