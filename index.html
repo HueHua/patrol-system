@@ -255,6 +255,7 @@
   /* Period other */
   .period-other{margin-top:8px;display:none}
 </style>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 </head>
 <body>
 
@@ -347,6 +348,7 @@
   </div>
   <div class="admin-actions">
     <button class="btn-export" id="btn-export" type="button">⬇ 匯出 CSV</button>
+    <button class="btn-export" id="btn-print" type="button" style="color:var(--success);border-color:var(--success)">📄 產出 Word 表格</button>
     <button class="btn-supplement" id="btn-supp-toggle" type="button">＋ 補充漏填班級</button>
   </div>
 
@@ -385,6 +387,27 @@
     <div class="edit-actions">
       <button class="btn-cancel-edit" id="btn-supp-cancel" type="button">取消</button>
       <button class="btn-save-edit" id="btn-supp-submit" type="button">送出補充紀錄</button>
+    </div>
+  </div>
+
+  <!-- Word 表格產出面板 -->
+  <div id="word-panel" style="display:none;background:var(--success-light);border:1.5px solid #6ee7b7;border-radius:var(--radius);padding:16px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:600;color:var(--success);margin-bottom:12px">📄 產出 Word 巡堂紀錄表</div>
+    <div class="row2" style="margin-bottom:10px">
+      <div class="field"><label>選擇日期</label><select id="word-date"><option value="">選擇日期</option></select></div>
+      <div class="field"><label>選擇節次</label>
+        <select id="word-period">
+          <option value="">全部節次</option>
+          <option>第1節</option><option>第2節</option><option>第3節</option><option>第4節</option>
+          <option>第5節</option><option>第6節</option><option>第7節</option><option>第8節</option>
+          <option>午休</option><option>其他</option>
+        </select>
+      </div>
+    </div>
+    <div id="word-preview-info" style="font-size:12px;color:var(--success);background:white;border:1px solid #6ee7b7;border-radius:7px;padding:8px 12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-cancel-edit" id="btn-word-cancel" type="button" style="flex:1">取消</button>
+      <button class="btn-save-edit" id="btn-word-generate" type="button" style="flex:2;background:var(--success)">⬇ 產出並下載 Word 檔</button>
     </div>
   </div>
 
@@ -444,6 +467,11 @@ window.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btn-add-class').addEventListener('click', addClassRow);
   document.getElementById('submit-btn').addEventListener('click', submitAll);
   document.getElementById('btn-export').addEventListener('click', exportCSV);
+  document.getElementById('btn-print').addEventListener('click', openWordPanel);
+  document.getElementById('btn-word-cancel').addEventListener('click', function(){ document.getElementById('word-panel').style.display='none'; });
+  document.getElementById('btn-word-generate').addEventListener('click', generateWordDoc);
+  document.getElementById('word-date').addEventListener('change', updateWordPreview);
+  document.getElementById('word-period').addEventListener('change', updateWordPreview);
   document.getElementById('btn-clear').addEventListener('click', clearAll);
   document.getElementById('btn-supp-toggle').addEventListener('click', toggleSupp);
   document.getElementById('btn-supp-cancel').addEventListener('click', toggleSupp);
@@ -969,6 +997,251 @@ function updateFilter(id,options,current){
   var first=sel.options[0].outerHTML; sel.innerHTML=first;
   options.forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(o===current) opt.selected=true; sel.appendChild(opt); });
 }
+
+function openWordPanel(){
+  var panel=document.getElementById('word-panel');
+  if(panel.style.display==='none' || !panel.style.display){
+    var records=getLocal();
+    var dates=[]; records.forEach(function(r){ if(r.dateStr&&dates.indexOf(r.dateStr)<0) dates.push(r.dateStr); }); dates.sort().reverse();
+    var sel=document.getElementById('word-date');
+    sel.innerHTML='<option value="">選擇日期</option>';
+    dates.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+    // 預設今天
+    var t2=todayROC(); var ts2=t2.roc+'/'+pad(t2.m)+'/'+pad(t2.d);
+    if(dates.indexOf(ts2)>=0) sel.value=ts2;
+    updateWordPreview();
+    panel.style.display='block';
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
+  } else {
+    panel.style.display='none';
+  }
+}
+
+function updateWordPreview(){
+  var date=document.getElementById('word-date').value;
+  var period=document.getElementById('word-period').value;
+  var info=document.getElementById('word-preview-info');
+  if(!date){ info.style.display='none'; return; }
+  var records=getLocal();
+  var filtered=records.filter(function(r){
+    return r.dateStr===date && (!period||r.period===period||(!period&&true));
+  });
+  if(!period) filtered=records.filter(function(r){ return r.dateStr===date; });
+  info.style.display='block';
+  if(!filtered.length){ info.textContent=date+(period?' '+period:'')+'：尚無資料'; return; }
+  // 依巡堂人員分組
+  var groups={};
+  filtered.forEach(function(r){ var k=(r.patroller||'未知')+'@'+(r.dept||''); if(!groups[k]) groups[k]=0; groups[k]++; });
+  var summary=Object.keys(groups).map(function(k){ return k.split('@')[0]+'（'+groups[k]+'班）'; }).join('、');
+  info.textContent='共 '+filtered.length+' 筆：'+summary+'，將產出 '+Object.keys(groups).length+' 份表格';
+}
+
+async function generateWordDoc(){
+  var date=document.getElementById('word-date').value;
+  var period=document.getElementById('word-period').value;
+  if(!date){ showToast('⚠ 請選擇日期','#d97706'); return; }
+
+  var records=getLocal();
+  var filtered=records.filter(function(r){
+    return r.dateStr===date && (!period||r.period===period);
+  });
+  if(!period) filtered=records.filter(function(r){ return r.dateStr===date; });
+  if(!filtered.length){ showToast('⚠ 所選條件下無資料','#d97706'); return; }
+
+  // 等 docx 載入
+  if(typeof docx==='undefined'){ showToast('⚠ 文件套件載入中，請稍候再試','#d97706'); return; }
+
+  var btn=document.getElementById('btn-word-generate');
+  btn.textContent='⏳ 產出中…'; btn.disabled=true;
+
+  try{
+    var D=docx;
+    var W_DXA=9638; // A4 content width (11906 - 1134*2)
+    var bdr={style:D.BorderStyle.SINGLE,size:4,color:'999999'};
+    var borders={top:bdr,bottom:bdr,left:bdr,right:bdr};
+    var signBdr={top:{style:D.BorderStyle.SINGLE,size:6,color:'333333'},bottom:{style:D.BorderStyle.SINGLE,size:6,color:'333333'},left:{style:D.BorderStyle.SINGLE,size:6,color:'333333'},right:{style:D.BorderStyle.SINGLE,size:6,color:'333333'}};
+
+    function tc(children,w,opts){
+      opts=opts||{};
+      return new D.TableCell({
+        width:{size:w,type:D.WidthType.DXA},
+        borders:opts.sign?signBdr:borders,
+        shading:opts.bg?{fill:opts.bg,type:D.ShadingType.CLEAR}:undefined,
+        margins:{top:80,bottom:80,left:100,right:100},
+        verticalAlign:D.VerticalAlign.CENTER,
+        columnSpan:opts.span||1,
+        rowSpan:opts.rowSpan||1,
+        children:children
+      });
+    }
+    function tp(text,opts){
+      opts=opts||{};
+      return new D.Paragraph({
+        alignment:opts.center?D.AlignmentType.CENTER:D.AlignmentType.LEFT,
+        spacing:{before:opts.before||0,after:opts.after||40},
+        children:[new D.TextRun({text:text,font:'標楷體',size:opts.size||22,bold:opts.bold||false,color:opts.color||'000000'})]
+      });
+    }
+
+    // 依巡堂人員分組
+    var groups={};
+    filtered.forEach(function(r){
+      var k=(r.patroller||'')+'__'+(r.dept||'')+'__'+(r.role||'');
+      if(!groups[k]) groups[k]={patroller:r.patroller||'',dept:r.dept||'',role:r.role||'',records:[]};
+      groups[k].records.push(r);
+    });
+
+    // 日期解析
+    var dp=(date||'').split('/');
+    var rocY=dp[0]||''; var rocM=dp[1]?parseInt(dp[1]):0; var rocD=dp[2]?parseInt(dp[2]):0;
+    var weekStr='';
+    var wdays=['日','一','二','三','四','五','六'];
+    if(dp.length===3){
+      var ad=new Date((parseInt(dp[0])+1911)+'-'+dp[1]+'-'+dp[2]);
+      if(!isNaN(ad)) weekStr=wdays[ad.getDay()];
+    }
+
+    var VC={A:'嬉鬧吵雜',B:'睡覺較多',C:'3C違規',D:'環境髒亂',E:'門窗未關',F:'電源未關',G:'老師缺席',OK:'正常上課'};
+    var sections=[];
+
+    Object.values(groups).forEach(function(g,gi){
+      var dataRows=g.records.map(function(r){
+        var viols=Array.isArray(r.violations)?r.violations:(r.violations||'').split('+').filter(Boolean);
+        var codeStr=viols.map(function(v){
+          if(v==='OK') return '正常上課';
+          var label=VC[v]||v;
+          if(v==='B'&&r.sleepCount) label+='（約'+r.sleepCount+'人）';
+          return v+'．'+label;
+        }).join('　');
+        var noteStr=r.note||'';
+        if(r.absentTime) noteStr=(noteStr?noteStr+'；':'')+'老師：'+r.absentTime;
+        return new D.TableRow({children:[
+          tc([tp(String(r.className||''),{center:true})],1300),
+          tc([tp(r.period||'',{center:true})],1700),
+          tc([tp(r.teacher||'',{center:true})],1600),
+          tc([tp(codeStr)],2638),
+          tc([tp(noteStr)],2400)
+        ]});
+      });
+
+      // 補足到至少8行
+      while(dataRows.length<8){
+        dataRows.push(new D.TableRow({children:[
+          tc([tp('')],1300),tc([tp('')],1700),tc([tp('')],1600),tc([tp('')],2638),tc([tp('')],2400)
+        ]}));
+      }
+
+      var periodTitle=period||'全節次';
+      var sectionContent=[
+        // 標題
+        new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{before:0,after:120},children:[
+          new D.TextRun({text:'臺中市立臺中第二高級中學巡堂紀錄表',font:'標楷體',size:32,bold:true})
+        ]}),
+        // 日期行
+        new D.Table({
+          width:{size:W_DXA,type:D.WidthType.DXA},
+          columnWidths:[1200,800,1200,600,800,600,800,600,1038],
+          rows:[new D.TableRow({children:[
+            tc([tp('日',{center:true,bold:true})],1200,{bg:'F5F5F5'}),
+            tc([tp('　期',{center:true,bold:true})],800,{bg:'F5F5F5'}),
+            tc([tp(rocY+'　年　'+rocM+'　月　'+rocD+'　日',{center:true})],3200,{span:3}),
+            tc([tp('星期',{center:true,bold:true})],600,{bg:'F5F5F5'}),
+            tc([tp(weekStr,{center:true,size:26})],800),
+            tc([tp('巡堂人員：'+g.dept+' '+g.role+' '+g.patroller)],1038)
+          ]})]
+        }),
+        new D.Paragraph({spacing:{before:0,after:60},children:[]}),
+        // 主資料表
+        new D.Table({
+          width:{size:W_DXA,type:D.WidthType.DXA},
+          columnWidths:[1300,1700,1600,2638,2400],
+          rows:[
+            new D.TableRow({tableHeader:true,children:[
+              tc([tp('班別',{center:true,bold:true})],1300,{bg:'DBEAFE'}),
+              tc([tp('節次',{center:true,bold:true})],1700,{bg:'DBEAFE'}),
+              tc([tp('任課老師',{center:true,bold:true})],1600,{bg:'DBEAFE'}),
+              tc([tp('紀　　　錄',{center:true,bold:true})],2638,{bg:'DBEAFE'}),
+              tc([tp('備　　　註',{center:true,bold:true})],2400,{bg:'DBEAFE'})
+            ]})
+          ].concat(dataRows)
+        }),
+        new D.Paragraph({spacing:{before:0,after:80},children:[]}),
+        // 代號說明
+        new D.Table({
+          width:{size:W_DXA,type:D.WidthType.DXA},
+          columnWidths:[W_DXA],
+          rows:[new D.TableRow({children:[
+            tc([
+              tp('違規及待改進事項代號說明：',{bold:true,size:20}),
+              tp('A．嬉鬧吵雜，課堂管理欠佳　　B．睡覺人數較多（請註記大概人數）',{size:20}),
+              tp('C．不當使用手機或3C產品　　　D．教室或走廊髒亂',{size:20}),
+              tp('E．室外課教室門窗未關閉　　　F．室外課教室電源未關閉',{size:20}),
+              tp('G．老師無故未到（請註記幾點幾分，並即時通知教學組）',{size:20})
+            ],W_DXA,{bg:'FAFAFA'})
+          ]})]
+        }),
+        new D.Paragraph({spacing:{before:0,after:80},children:[]}),
+        // 會簽表
+        new D.Table({
+          width:{size:W_DXA,type:D.WidthType.DXA},
+          columnWidths:[700,1500,700,3338,700,1700],
+          rows:[
+            new D.TableRow({children:[
+              tc([tp('巡',{center:true,bold:true}),tp('堂',{center:true,bold:true})],700,{bg:'F5F5F5',sign:true}),
+              tc([tp('')],1500,{sign:true}),
+              tc([tp('會',{center:true,bold:true}),tp('簽',{center:true,bold:true})],700,{bg:'F5F5F5',sign:true}),
+              tc([
+                tp('學務處：',{size:20}),
+                tp(''),tp(''),tp(''),
+                tp('其　他：',{size:20})
+              ],3338,{sign:true}),
+              tc([tp('')],700,{sign:true}),
+              tc([tp('')],1700,{sign:true})
+            ]}),
+            new D.TableRow({children:[
+              tc([tp('教學',{center:true,bold:true}),tp('組長',{center:true,bold:true})],700,{bg:'F5F5F5',sign:true}),
+              tc([tp('')],1500,{sign:true}),
+              tc([tp('教務',{center:true,bold:true}),tp('主任',{center:true,bold:true})],700,{bg:'F5F5F5',sign:true}),
+              tc([tp('')],1500,{sign:true}),
+              tc([tp('校',{center:true,bold:true}),tp('長',{center:true,bold:true})],700,{bg:'F5F5F5',sign:true}),
+              tc([tp('')],1738,{sign:true})
+            ]})
+          ]
+        })
+      ];
+
+      sections.push({
+        properties:{
+          page:{
+            size:{width:11906,height:16838},
+            margin:{top:851,bottom:851,left:1134,right:1134}
+          },
+          type:gi>0?D.SectionType.NEXT_PAGE:undefined
+        },
+        children:sectionContent
+      });
+    });
+
+    var doc=new D.Document({
+      styles:{default:{document:{run:{font:'標楷體',size:22}}}},
+      sections:sections
+    });
+
+    var buf=await D.Packer.toBuffer(doc);
+    var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='巡堂紀錄表_'+date.replace(/\//g,'-')+(period?'_'+period:'')+'.docx';
+    a.click();
+    showToast('✓ Word 檔案已下載！');
+    document.getElementById('word-panel').style.display='none';
+  }catch(e){
+    console.error(e);
+    showToast('⚠ 產出失敗：'+e.message,'#dc2626');
+  }
+  btn.textContent='⬇ 產出並下載 Word 檔'; btn.disabled=false;
+}
+
 
 function exportCSV(){
   var records=getLocal(); if(!records.length){ showToast('⚠ 尚無資料','#d97706'); return; }
