@@ -755,12 +755,21 @@ async function renderAdmin(){
   if(hasGAS()){
     document.getElementById('record-list').innerHTML='<div class="no-records"><div class="icon">☁</div>雲端載入中…</div>';
     try{
-      var res=await fetch(GAS_URL+'?action=getAll');
+      var controller=new AbortController();
+      var timer=setTimeout(function(){controller.abort();},8000);
+      var res=await fetch(GAS_URL+'?action=getAll',{signal:controller.signal});
+      clearTimeout(timer);
       var json=await res.json();
-      var cloudRecs=json.records||[];
-      records=cloudRecs;
+      records=json.records||[];
       saveLocal(records);
-    }catch(e){ records=getLocal(); showToast('⚠ 雲端讀取失敗，顯示本機資料','#d97706'); }
+    }catch(e){
+      records=getLocal();
+      if(records.length===0){
+        document.getElementById('record-list').innerHTML='<div class="no-records"><div class="icon">⚠</div>雲端讀取失敗，且本機無資料</div>';
+        return;
+      }
+      showToast('⚠ 雲端讀取失敗，顯示本機資料','#d97706');
+    }
   }else{ records=getLocal(); }
 
   var fd=document.getElementById('filter-date').value;
