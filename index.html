@@ -405,9 +405,19 @@
 'use strict';
 var GAS_URL     = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec';
 var STORAGE_KEY = 'tc2hs_v7';
+var PHOTO_KEY   = 'tc2hs_photos_v7';
 var hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
 function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
-function saveLocal(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+function saveLocal(arr){
+  // 照片 base64 單獨存，主資料不含 photoDataUrl 以節省空間
+  var photos=getPhotos();
+  arr.forEach(function(r){ if(r.photoDataUrl){ photos[makePhotoKey(r)]=r.photoDataUrl; r.photoDataUrl=''; } });
+  try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(e){}
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch(e){}
+}
+function getPhotos(){ try{ return JSON.parse(localStorage.getItem(PHOTO_KEY))||{}; }catch(e){ return {}; } }
+function makePhotoKey(r){ return (r.dateStr||'')+'|'+(r.period||'')+'|'+(r.className||''); }
+function getPhotoFor(r){ return getPhotos()[makePhotoKey(r)]||''; }
 
 var WD=['日','一','二','三','四','五','六'];
 function todayROC(){ var d=new Date(); return {roc:d.getFullYear()-1911,m:d.getMonth()+1,d:d.getDate(),w:WD[d.getDay()]}; }
@@ -748,16 +758,7 @@ async function renderAdmin(){
       var res=await fetch(GAS_URL+'?action=getAll');
       var json=await res.json();
       var cloudRecs=json.records||[];
-      // 合併：保留本機的照片資料（photoDataUrl）
-      var localRecs=getLocal();
-      var localMap={};
-      localRecs.forEach(function(r){ if(r.id) localMap[String(r.id)]=r; });
-      records=cloudRecs.map(function(r){
-        var local=localMap[String(r.id)];
-        if(local && local.photoDataUrl) r.photoDataUrl=local.photoDataUrl;
-        if(local && local.hasPhoto) r.hasPhoto=local.hasPhoto;
-        return r;
-      });
+      records=cloudRecs;
       saveLocal(records);
     }catch(e){ records=getLocal(); showToast('⚠ 雲端讀取失敗，顯示本機資料','#d97706'); }
   }else{ records=getLocal(); }
@@ -818,9 +819,10 @@ function buildItem(r,i){
   if(notes.length){ var nd=document.createElement('div'); nd.style.cssText='font-size:12px;color:var(--text2);margin-top:4px'; nd.textContent=notes.join('｜'); item.appendChild(nd); }
 
   // 照片顯示：優先用 base64 預覽，其次用 photoUrl 連結
-  if(r.photoDataUrl){
+  var localPhoto=getPhotoFor(r);
+  if(localPhoto){
     var thumb=document.createElement('div'); thumb.className='photo-thumb-admin';
-    var img=document.createElement('img'); img.src=r.photoDataUrl; img.alt='巡堂照片';
+    var img=document.createElement('img'); img.src=localPhoto; img.alt='巡堂照片';
     thumb.appendChild(img);
     if(r.photoUrl){
       var pl=document.createElement('a'); pl.className='photo-link'; pl.href=r.photoUrl; pl.target='_blank'; pl.textContent='↗ 在 Google Drive 開啟';
