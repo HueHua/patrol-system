@@ -403,7 +403,7 @@
 
 <script>
 'use strict';
-var GAS_URL     = 'https://script.google.com/macros/s/AKfycbyfjqscOGnhlGLG414tCPAT4hdkC3hauNgsTGNOoraIs3xRfqMLMV_n0dae0ZTsXIyrYg/exec';
+var GAS_URL     = 'https://script.google.com/macros/s/AKfycbzdVIBA-_LBv7815xgcewT7BzKx9NzVgB3ekeKbB72i8QFL_8MtgbKPg7WdD1WC5E7fSQ/exec';
 var STORAGE_KEY = 'tc2hs_v7';
 var PHOTO_KEY   = 'tc2hs_photos_v7';
 var hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
@@ -411,9 +411,13 @@ function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||
 function saveLocal(arr){
   // 照片 base64 單獨存，主資料不含 photoDataUrl 以節省空間
   var photos=getPhotos();
-  arr.forEach(function(r){ if(r.photoDataUrl){ photos[makePhotoKey(r)]=r.photoDataUrl; r.photoDataUrl=''; } });
+  // 複製一份再處理，不污染原始陣列
+  var slim=arr.map(function(r){
+    if(r.photoDataUrl){ photos[makePhotoKey(r)]=r.photoDataUrl; }
+    var copy=Object.assign({},r); copy.photoDataUrl=''; return copy;
+  });
   try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(e){}
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch(e){}
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(slim)); }catch(e){}
 }
 function getPhotos(){ try{ return JSON.parse(localStorage.getItem(PHOTO_KEY))||{}; }catch(e){ return {}; } }
 function makePhotoKey(r){ return (r.dateStr||'')+'|'+(r.period||'')+'|'+(r.className||''); }
@@ -588,12 +592,20 @@ function buildRecord(row, base, cb){
 
 function postRecord(rec){
   if(!hasGAS()) return Promise.resolve(null);
-  var slim=Object.assign({}, rec, {photoBase64:''});
+  var slim=Object.assign({}, rec, {photoBase64:'', photoDataUrl:''});
+  // 用 no-cors 確保 POST 一定送得到（不受 CORS 限制）
+  // no-cors 模式無法取得回應，所以直接回傳 {status:'ok'}
   return fetch(GAS_URL, {
     method:'POST',
+    mode:'no-cors',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(slim)
-  }).then(function(r){ return r.json(); }).catch(function(){ return null; });
+  }).then(function(){
+    return {status:'ok'};
+  }).catch(function(e){
+    console.error('postRecord error:', e);
+    return null;
+  });
 }
 
 function sendOne(id){
@@ -605,15 +617,21 @@ function sendOne(id){
   btn.textContent='☁ 送出中…'; btn.disabled=true;
   buildRecord(row, base, function(rec){
     var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
+    btn.textContent='☁ 同步中…';
     postRecord(rec).then(function(res){
-      if(res && res.photoUrl){
-        var recs=getLocal();
-        var idx=recs.findIndex(function(r){return r.id===rec.id;});
-        if(idx>=0){ recs[idx].photoUrl=res.photoUrl; saveLocal(recs); }
+      if(res && res.status==='ok'){
+        if(res.photoUrl){
+          var recs=getLocal();
+          var idx=recs.findIndex(function(r){return r.id===rec.id;});
+          if(idx>=0){ recs[idx].photoUrl=res.photoUrl; saveLocal(recs); }
+        }
+        btn.textContent='✓ 已送出'; btn.classList.add('done');
+        showToast('✓ '+rec.className+' 已同步至雲端！');
+      } else {
+        btn.textContent='⚠ 同步失敗'; btn.disabled=false;
+        showToast('⚠ '+rec.className+' 雲端同步失敗，請重試','#d97706');
       }
     });
-    btn.textContent='✓ 已送出'; btn.classList.add('done');
-    showToast('✓ '+rec.className+' 已送出！');
   });
 }
 
