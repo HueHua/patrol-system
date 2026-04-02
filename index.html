@@ -351,6 +351,7 @@
     <button class="btn-export" id="btn-print" type="button" style="color:var(--success);border-color:var(--success)">📄 產出 Word 表格</button>
     <button class="btn-supplement" id="btn-supp-toggle" type="button">＋ 補充漏填班級</button>
   </div>
+  <div id="photo-diag" style="display:none;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto"></div>
 
   <!-- 補充面板 -->
   <div class="supplement-panel" id="supp-panel">
@@ -884,6 +885,33 @@ async function renderAdmin(){
   if(!filtered.length){ list.innerHTML='<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>'; return; }
   list.innerHTML='';
   filtered.forEach(function(r,i){ list.appendChild(buildItem(r,i)); });
+
+  // 診斷：顯示照片儲存狀況
+  var diagEl=document.getElementById('photo-diag');
+  if(diagEl){
+    var photos=getPhotos();
+    var photoKeys=Object.keys(photos);
+    var recs=getLocal();
+    var recsWithPhoto=recs.filter(function(r){ return r.hasPhoto; });
+    var diagLines=[
+      '=== 照片診斷 ===',
+      'PHOTO_KEY 內有 '+photoKeys.length+' 筆照片',
+      'hasPhoto=true 的紀錄：'+recsWithPhoto.length+' 筆',
+      '',
+      'Photo keys:'
+    ];
+    photoKeys.forEach(function(k){ diagLines.push('  '+k+' → '+photos[k].substring(0,30)+'...'); });
+    diagLines.push('');
+    diagLines.push('Records with hasPhoto:');
+    recsWithPhoto.forEach(function(r){ 
+      var key=makePhotoKey(r);
+      var found=photos[key]?'✓ 找到':'✗ 找不到';
+      diagLines.push('  '+key+' → '+found);
+    });
+    diagEl.textContent=diagLines.join('
+');
+    diagEl.style.display=photoKeys.length>0||recsWithPhoto.length>0?'block':'none';
+  }
 }
 
 function buildItem(r,i){
