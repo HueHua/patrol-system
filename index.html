@@ -908,8 +908,7 @@ async function renderAdmin(){
       var found=photos[key]?'✓ 找到':'✗ 找不到';
       diagLines.push('  '+key+' → '+found);
     });
-    diagEl.textContent=diagLines.join('
-');
+    diagEl.textContent=diagLines.join('\n');
     diagEl.style.display=photoKeys.length>0||recsWithPhoto.length>0?'block':'none';
   }
 }
