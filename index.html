@@ -433,17 +433,19 @@ var hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
 function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(arr){
   // 照片 base64 單獨存，主資料不含 photoDataUrl 以節省空間
+  // 先讀出現有照片，再合併新的（不覆蓋舊照片）
   var photos=getPhotos();
-  // 複製一份再處理，不污染原始陣列
   var slim=arr.map(function(r){
-    if(r.photoDataUrl){ photos[makePhotoKey(r)]=r.photoDataUrl; }
+    if(r.photoDataUrl && r.photoDataUrl.length>10){
+      photos[makePhotoKey(r)]=r.photoDataUrl;
+    }
     var copy=Object.assign({},r); copy.photoDataUrl=''; return copy;
   });
-  try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(e){}
+  try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(pe){}
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(slim)); }catch(e){}
 }
 function getPhotos(){ try{ return JSON.parse(localStorage.getItem(PHOTO_KEY))||{}; }catch(e){ return {}; } }
-function makePhotoKey(r){ return (r.dateStr||'')+'|'+(r.period||'')+'|'+(r.className||''); }
+function makePhotoKey(r){ return String(r.dateStr||'')+'|'+String(r.period||'')+'|'+String(r.className||''); }
 function getPhotoFor(r){ return getPhotos()[makePhotoKey(r)]||''; }
 
 var WD=['日','一','二','三','四','五','六'];
