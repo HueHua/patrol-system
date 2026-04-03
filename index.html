@@ -649,48 +649,54 @@ function postRecord(rec, retries){
   if(!hasGAS()) return Promise.resolve(null);
   retries = retries===undefined ? 2 : retries;
   var hasPhoto = rec.photoDataUrl && rec.photoDataUrl.length > 10;
-  var slim = Object.assign({}, rec);
-  if(!hasPhoto) slim.photoDataUrl = '';
-  slim.photoBase64 = '';
 
-  // 有照片時用正常 fetch（可收到 Drive 連結回應）
-  // 沒照片時用 no-cors（更穩定）
-  var fetchOpts = hasPhoto ? {
-    method:'POST',
+  // 步驟一：先用 no-cors 送出文字資料（穩定不被擋）
+  var slim = Object.assign({}, rec, {photoDataUrl:'', photoBase64:''});
+  var textPost = fetch(GAS_URL, {
+    method:'POST', mode:'no-cors',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(slim)
-  } : {
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(slim)
+  }).then(function(){ return {status:'ok'}; })
+    .catch(function(e){
+      if(retries>0) return new Promise(function(res){ setTimeout(function(){ res(postRecord(rec,retries-1)); },1500); });
+      return {status:'error'};
+    });
+
+  if(!hasPhoto) return textPost;
+
+  // 步驟二：有照片時，另外用正常 fetch 只送照片
+  var photoPayload = {
+    id: rec.id,           // 用 id 讓 GAS 找到對應紀錄更新 photoUrl
+    photoOnly: true,
+    photoDataUrl: rec.photoDataUrl,
+    photoName: rec.photoName || ('巡堂照片_'+Date.now()+'.jpg'),
+    dateStr: rec.dateStr, period: rec.period, className: rec.className
   };
 
-  return fetch(GAS_URL, fetchOpts).then(function(r){
-    if(r.type==='opaque') return {status:'ok'}; // no-cors 回應
-    return r.json();
-  }).then(function(res){
-    // 如果 GAS 回傳了 photoUrl，存回本機
-    if(res && res.photoUrl && res.photoUrl.indexOf('http')===0){
-      var recs=getLocal();
-      var idx=recs.findIndex(function(r){ return r.id===rec.id; });
-      if(idx>=0){
-        recs[idx].photoUrl=res.photoUrl;
-        // 照片已上傳 Drive，本機可以清除以節省空間
-        var photos=getPhotos();
-        delete photos[makePhotoKey(rec)];
-        try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(e){}
-        saveLocal(recs);
+  var photoPost = fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(photoPayload)
+  }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res && res.photoUrl && res.photoUrl.indexOf('http')===0){
+        // 存 Drive 連結到本機
+        var recs=getLocal();
+        var idx=recs.findIndex(function(r){ return String(r.id)===String(rec.id); });
+        if(idx>=0){
+          recs[idx].photoUrl=res.photoUrl;
+          var photos=getPhotos();
+          delete photos[makePhotoKey(rec)];
+          try{ localStorage.setItem(PHOTO_KEY,JSON.stringify(photos)); }catch(e){}
+          saveLocal(recs);
+        }
       }
-    }
-    return res || {status:'ok'};
-  }).catch(function(e){
-    if(retries > 0){
-      return new Promise(function(resolve){
-        setTimeout(function(){ resolve(postRecord(rec, retries-1)); }, 1500);
-      });
-    }
-    return {status:'error'};
+      return res||{status:'ok'};
+    }).catch(function(){ return {status:'photo_error'}; });
+
+  // 兩個都送，文字優先回傳結果
+  return Promise.all([textPost, photoPost]).then(function(results){
+    return results[0];
   });
 }
 
