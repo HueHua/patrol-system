@@ -153,13 +153,7 @@
   .chip-ok.selected .chip-code{background:var(--success)!important;border-color:var(--success)!important}
 
   /* Photo */
-  .photo-upload{margin-top:10px}
-  .photo-label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--border2);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2)}
-  .photo-label:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
-  .photo-label input[type=file]{display:none}
-  .photo-preview{margin-top:8px;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--border)}
-  .photo-preview .preview-img{width:100%;max-height:200px;object-fit:cover;display:block}
-  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:26px;text-align:center}
+
 
   /* Buttons */
   .btn-add-class{width:100%;padding:13px;border:1.5px dashed var(--border2);background:transparent;border-radius:10px;color:var(--text2);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -230,15 +224,24 @@
   .btn-cancel-edit{flex:1;padding:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;color:var(--text2);font-family:var(--font);font-size:13px;cursor:pointer}
 
   /* Photo in admin */
-  .photo-thumb-admin{margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
-  .photo-thumb-admin img{width:100%;max-height:200px;object-fit:cover;display:block}
-  .photo-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px;font-weight:500}
-  .photo-link:hover{text-decoration:underline}
 
   .no-records{text-align:center;padding:48px 0;color:var(--text3);font-size:14px}
   .no-records .icon{font-size:36px;margin-bottom:10px}
   .btn-clear{width:100%;padding:12px;background:transparent;border:1.5px solid var(--border2);border-radius:10px;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;transition:all .15s}
   .btn-clear:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-light)}
+
+  /* Photo upload */
+  .photo-upload{margin-top:10px}
+  .photo-label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--border2);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2)}
+  .photo-label:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+  .photo-label input[type=file]{display:none}
+  .photo-preview{margin-top:8px;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--border)}
+  .photo-preview .preview-img{width:100%;max-height:200px;object-fit:cover;display:block}
+  .photo-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:26px;text-align:center}
+  .photo-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;margin-top:6px;font-weight:500}
+  .photo-link:hover{text-decoration:underline}
+  .photo-thumb-admin{margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+  .photo-thumb-admin img{width:100%;max-height:200px;object-fit:cover;display:block}
 
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:5px;animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
@@ -351,7 +354,7 @@
     <button class="btn-export" id="btn-print" type="button" style="color:var(--success);border-color:var(--success)">📄 產出 Word 表格</button>
     <button class="btn-supplement" id="btn-supp-toggle" type="button">＋ 補充漏填班級</button>
   </div>
-  <div id="photo-diag" style="display:none;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto"></div>
+
 
   <!-- 補充面板 -->
   <div class="supplement-panel" id="supp-panel">
@@ -385,16 +388,7 @@
       <div class="supp-chip ok-chip" data-code="OK"><span class="chip-code ok-code">✓</span><span>正常上課</span></div>
     </div>
     <div class="field"><label>備註（選填）</label><textarea id="supp-note" placeholder="其他補充說明"></textarea></div>
-    <div class="photo-upload">
-      <label class="photo-label" style="background:white">
-        <span>📷</span><span>拍照或上傳照片（選填）</span>
-        <input type="file" id="supp-photo" accept="image/*">
-      </label>
-      <div id="supp-photo-preview" style="display:none;margin-top:8px;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--border)">
-        <img id="supp-photo-img" src="" alt="預覽" style="width:100%;max-height:180px;object-fit:cover;display:block">
-        <button type="button" id="supp-photo-remove" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:26px;text-align:center">✕</button>
-      </div>
-    </div>
+
     <div class="edit-actions">
       <button class="btn-cancel-edit" id="btn-supp-cancel" type="button">取消</button>
       <button class="btn-save-edit" id="btn-supp-submit" type="button">送出補充紀錄</button>
@@ -439,25 +433,11 @@
 'use strict';
 var GAS_URL     = 'https://script.google.com/macros/s/AKfycbzdVIBA-_LBv7815xgcewT7BzKx9NzVgB3ekeKbB72i8QFL_8MtgbKPg7WdD1WC5E7fSQ/exec';
 var STORAGE_KEY = 'tc2hs_v7';
-var PHOTO_KEY   = 'tc2hs_photos_v7';
 var hasGAS = function(){ return GAS_URL && GAS_URL.indexOf('https://')===0; };
 function getLocal(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(arr){
-  // 照片 base64 單獨存，主資料不含 photoDataUrl 以節省空間
-  // 先讀出現有照片，再合併新的（不覆蓋舊照片）
-  var photos=getPhotos();
-  var slim=arr.map(function(r){
-    if(r.photoDataUrl && r.photoDataUrl.length>10){
-      photos[makePhotoKey(r)]=r.photoDataUrl;
-    }
-    var copy=Object.assign({},r); copy.photoDataUrl=''; return copy;
-  });
-  try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }catch(pe){}
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(slim)); }catch(e){}
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch(e){}
 }
-function getPhotos(){ try{ return JSON.parse(localStorage.getItem(PHOTO_KEY))||{}; }catch(e){ return {}; } }
-function makePhotoKey(r){ return String(r.dateStr||'')+'|'+String(r.period||'')+'|'+String(r.className||''); }
-function getPhotoFor(r){ return getPhotos()[makePhotoKey(r)]||''; }
 
 var WD=['日','一','二','三','四','五','六'];
 function todayROC(){ var d=new Date(); return {roc:d.getFullYear()-1911,m:d.getMonth()+1,d:d.getDate(),w:WD[d.getDay()]}; }
@@ -489,20 +469,7 @@ window.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btn-supp-toggle').addEventListener('click', toggleSupp);
   document.getElementById('btn-supp-cancel').addEventListener('click', toggleSupp);
   document.getElementById('btn-supp-submit').addEventListener('click', submitSupp);
-  document.getElementById('supp-photo').addEventListener('change', function(){
-    var file=this.files[0]; if(!file) return;
-    var reader=new FileReader();
-    reader.onload=function(e){
-      document.getElementById('supp-photo-img').src=e.target.result;
-      document.getElementById('supp-photo-preview').style.display='block';
-    };
-    reader.readAsDataURL(file);
-  });
-  document.getElementById('supp-photo-remove').addEventListener('click', function(){
-    document.getElementById('supp-photo').value='';
-    document.getElementById('supp-photo-img').src='';
-    document.getElementById('supp-photo-preview').style.display='none';
-  });
+
   document.getElementById('filter-date').addEventListener('change', renderAdmin);
   document.getElementById('filter-dept').addEventListener('change', renderAdmin);
   document.getElementById('supp-date').addEventListener('change', updateSuppInfo);
@@ -565,6 +532,7 @@ function addClassRow(){
   });
 
   // 照片
+  // 照片預覽
   var photoInput=row.querySelector('.f-photo');
   var photoPreview=row.querySelector('.photo-preview');
   var previewImg=row.querySelector('.preview-img');
@@ -622,7 +590,8 @@ function getBaseInfo(){
 function buildRecord(row, base, cb){
   var viols=[];
   row.querySelectorAll('.chip.selected').forEach(function(c){ viols.push(c.dataset.code); });
-  var file=row.querySelector('.f-photo').files[0];
+  var photoInput=row.querySelector('.f-photo');
+  var file=photoInput ? photoInput.files[0] : null;
   var rec=Object.assign({}, base, {
     id:Date.now()+Math.random(), ts:new Date().toISOString(),
     className:row.querySelector('.f-class').value.trim(),
@@ -636,10 +605,23 @@ function buildRecord(row, base, cb){
   if(file){
     var reader=new FileReader();
     reader.onload=function(e){
-      rec.photoDataUrl=e.target.result;
-      rec.photoName=file.name;
-      rec.hasPhoto=true;
-      cb(rec);
+      // 壓縮照片（最長邊 800px）
+      var img=new Image();
+      img.onload=function(){
+        var maxSize=800, w=img.width, h=img.height;
+        if(w>maxSize||h>maxSize){
+          if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
+          else { w=Math.round(w*maxSize/h); h=maxSize; }
+        }
+        var canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        rec.photoDataUrl=canvas.toDataURL('image/jpeg',0.75);
+        rec.photoName=file.name; rec.hasPhoto=true;
+        cb(rec);
+      };
+      img.onerror=function(){ cb(rec); };
+      img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   } else { cb(rec); }
@@ -648,258 +630,75 @@ function buildRecord(row, base, cb){
 function postRecord(rec, retries){
   if(!hasGAS()) return Promise.resolve(null);
   retries = retries===undefined ? 2 : retries;
-  var hasPhoto = rec.photoDataUrl && rec.photoDataUrl.length > 10;
+  var hasPhoto = rec.hasPhoto && rec.photoDataUrl && rec.photoDataUrl.length > 10;
 
-  // 步驟一：先用 no-cors 送出文字資料（穩定不被擋）
+  // 文字資料用 no-cors（穩定）
   var slim = Object.assign({}, rec, {photoDataUrl:'', photoBase64:''});
-  var textPost = fetch(GAS_URL, {
+  var textPromise = fetch(GAS_URL, {
     method:'POST', mode:'no-cors',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(slim)
   }).then(function(){ return {status:'ok'}; })
-    .catch(function(e){
-      if(retries>0) return new Promise(function(res){ setTimeout(function(){ res(postRecord(rec,retries-1)); },1500); });
+    .catch(function(){
+      if(retries>0) return new Promise(function(r){ setTimeout(function(){ r(postRecord(rec,retries-1)); },1500); });
       return {status:'error'};
     });
 
-  if(!hasPhoto) return textPost;
+  if(!hasPhoto) return textPromise;
 
-  // 步驟二：有照片時，另外用正常 fetch 只送照片
-  var photoPayload = {
-    id: rec.id,           // 用 id 讓 GAS 找到對應紀錄更新 photoUrl
-    photoOnly: true,
-    photoDataUrl: rec.photoDataUrl,
-    photoName: rec.photoName || ('巡堂照片_'+Date.now()+'.jpg'),
-    dateStr: rec.dateStr, period: rec.period, className: rec.className
-  };
+  // 照片用 iframe + postMessage 繞過 CORS
+  var photoPromise = uploadPhotoViaIframe(rec);
 
-  var photoPost = fetch(GAS_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(photoPayload)
-  }).then(function(r){ return r.json(); })
-    .then(function(res){
-      if(res && res.photoUrl && res.photoUrl.indexOf('http')===0){
-        // 存 Drive 連結到本機
-        var recs=getLocal();
-        var idx=recs.findIndex(function(r){ return String(r.id)===String(rec.id); });
-        if(idx>=0){
-          recs[idx].photoUrl=res.photoUrl;
-          var photos=getPhotos();
-          delete photos[makePhotoKey(rec)];
-          try{ localStorage.setItem(PHOTO_KEY,JSON.stringify(photos)); }catch(e){}
-          saveLocal(recs);
-        }
-      }
-      return res||{status:'ok'};
-    }).catch(function(){ return {status:'photo_error'}; });
-
-  // 兩個都送，文字優先回傳結果
-  return Promise.all([textPost, photoPost]).then(function(results){
+  return Promise.all([textPromise, photoPromise]).then(function(results){
+    var photoResult = results[1];
+    if(photoResult && photoResult.photoUrl){
+      // 存 Drive 連結到本機
+      var recs=getLocal();
+      var idx=recs.findIndex(function(r){ return String(r.id)===String(rec.id); });
+      if(idx>=0){ recs[idx].photoUrl=photoResult.photoUrl; saveLocal(recs); }
+    }
     return results[0];
   });
 }
 
-function sendOne(id){
-  var base=getBaseInfo();
-  if(!base.patroller||!base.period){ showToast('⚠ 請先填寫姓名與節次','#dc2626'); return; }
-  var row=document.querySelector('.class-row[data-id="'+id+'"]');
-  if(!row.querySelector('.f-class').value.trim()){ showToast('⚠ 請填寫班級名稱','#dc2626'); return; }
-  var btn=document.getElementById('send-one-'+id);
-  btn.textContent='☁ 送出中…'; btn.disabled=true;
-  buildRecord(row, base, function(rec){
-    var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
-    // 標示送出中
-    btn.textContent='☁ 送出中…'; btn.disabled=true;
-    btn.style.borderColor=''; btn.style.color='';
-    var row2=document.querySelector('.class-row[data-id="'+id+'"]');
-    if(row2) row2.style.borderColor='#93c5fd';
+function uploadPhotoViaIframe(rec){
+  return new Promise(function(resolve){
+    // 建立隱藏 iframe 載入 GAS upload 頁面
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = GAS_URL + '?action=uploadPage';
+    document.body.appendChild(iframe);
 
-    var attempt=0;
-    function tryPost(){
-      attempt++;
-      if(attempt>1) btn.textContent='↻ 重試 '+attempt+'/3…';
-      postRecord(rec, 0).then(function(res){
-        if(res && res.status==='ok'){
-          btn.textContent='✓ 已送出';
-          btn.classList.add('done');
-          btn.style.borderColor='var(--success)';
-          btn.style.color='var(--success)';
-          if(row2) row2.style.borderColor='var(--success)';
-          showToast('✓ '+rec.className+' 已送出！');
-        } else if(attempt < 3){
-          setTimeout(tryPost, 1500);
-        } else {
-          btn.textContent='⚠ 送出失敗 — 點此重試';
-          btn.disabled=false;
-          btn.style.borderColor='var(--danger)';
-          btn.style.color='var(--danger)';
-          if(row2) row2.style.borderColor='var(--danger)';
-          showToast('⚠ '+rec.className+' 送出失敗，請點按鈕重試','#dc2626');
-        }
-      });
-    }
-    tryPost();
-  });
-}
+    var timeout = setTimeout(function(){
+      document.body.removeChild(iframe);
+      resolve({status:'timeout'});
+    }, 30000);
 
-function submitAll(){
-  var base=getBaseInfo();
-  if(!base.patroller||!base.period){ showToast('⚠ 請填寫姓名與節次','#dc2626'); return; }
-  var classRows=document.querySelectorAll('.class-row');
-  var ok=true;
-  classRows.forEach(function(r){ if(!r.querySelector('.f-class').value.trim()){ ok=false; r.querySelector('.f-class').focus(); } });
-  if(!ok){ showToast('⚠ 有班級名稱未填寫','#dc2626'); return; }
+    // 等 iframe 載入完成後送照片
+    iframe.onload = function(){
+      iframe.contentWindow.postMessage({
+        type: 'UPLOAD_PHOTO',
+        photoDataUrl: rec.photoDataUrl,
+        photoName: rec.photoName || ('巡堂_'+Date.now()+'.jpg'),
+        className: String(rec.className),
+        period: rec.period,
+        dateStr: rec.dateStr
+      }, '*');
+    };
 
-  var btn=document.getElementById('submit-btn');
-  btn.disabled=true; btn.textContent='☁ 同步中…';
-
-  var pending=[];
-  classRows.forEach(function(row){
-    var b=document.getElementById('send-one-'+row.dataset.id);
-    if(b&&b.classList.contains('done')) return;
-    pending.push(row);
-  });
-
-  if(!pending.length){
-    showToast('✓ 所有班級已逐一送出！');
-    btn.disabled=false; btn.textContent='✉ 全部送出';
-    resetForm(); return;
-  }
-
-  // 先收集所有班級記錄
-  var items=[], built=0;
-  pending.forEach(function(row){
-    buildRecord(row, base, function(rec){
-      items.push({rec:rec, row:row}); built++;
-      if(built===pending.length){
-        // 先全部存入本機
-        var arr=getLocal();
-        items.forEach(function(item){ arr.unshift(item.rec); });
-        saveLocal(arr);
-        // 逐班依序送出，避免 GAS 同時收到太多請求
-        var successCount=0, failCount=0, total=items.length;
-        function sendNext(i){
-          if(i>=total){
-            if(failCount===0){
-              showToast('✓ 全部 '+total+' 班已同步完成！');
-              resetForm();
-            } else {
-              showToast('⚠ '+successCount+' 班成功，'+failCount+' 班失敗，請重試紅框班級','#dc2626');
-            }
-            btn.disabled=false; btn.textContent='✉ 全部送出';
-            return;
-          }
-          var item=items[i];
-          var rowEl=item.row;
-          var btnOne=document.getElementById('send-one-'+rowEl.dataset.id);
-          btn.textContent='☁ 第 '+(i+1)+'/'+total+' 班送出中…';
-          rowEl.style.outline='2px solid #93c5fd';
-          // 單筆送出（不重試，由函式本身控制）
-          postRecord(item.rec, 0).then(function(res){
-            if(res && res.status==='ok'){
-              successCount++;
-              rowEl.style.outline='2px solid var(--success)';
-              if(btnOne){ btnOne.textContent='✓ 已送出'; btnOne.classList.add('done'); btnOne.disabled=true; }
-            } else {
-              failCount++;
-              rowEl.style.outline='2px solid var(--danger)';
-              if(btnOne){ btnOne.textContent='⚠ 失敗，點此重試'; btnOne.style.color='var(--danger)'; btnOne.style.borderColor='var(--danger)'; btnOne.disabled=false; }
-            }
-            // 每班間隔 800ms，給 GAS 處理時間
-            setTimeout(function(){ sendNext(i+1); }, 800);
-          });
-        }
-        sendNext(0);
+    // 接收 iframe 回傳的結果
+    function onMessage(e){
+      if(e.data && e.data.type==='UPLOAD_RESULT'){
+        clearTimeout(timeout);
+        window.removeEventListener('message', onMessage);
+        document.body.removeChild(iframe);
+        resolve(e.data);
       }
-    });
+    }
+    window.addEventListener('message', onMessage);
   });
 }
 
-function resetForm(){
-  document.getElementById('period').value='';
-  document.getElementById('period-other-wrap').style.display='none';
-  document.getElementById('period-other').value='';
-  document.getElementById('class-list').innerHTML='';
-  rowId=0; addClassRow(); updateCount();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ── 補充漏填 ──────────────────────────────────
-function toggleSupp(){
-  var panel=document.getElementById('supp-panel');
-  var open=panel.classList.toggle('open');
-  if(open){
-    var dates=[];
-    getLocal().forEach(function(r){ if(r.dateStr&&dates.indexOf(r.dateStr)<0) dates.push(r.dateStr); });
-    dates.sort().reverse();
-    var sel=document.getElementById('supp-date');
-    sel.innerHTML='<option value="">選擇日期</option>';
-    dates.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
-    var t=todayROC(), ts=t.roc+'/'+pad(t.m)+'/'+pad(t.d);
-    if(dates.indexOf(ts)>=0) sel.value=ts;
-    updateSuppInfo();
-    panel.scrollIntoView({behavior:'smooth',block:'start'});
-  }
-}
-
-function updateSuppInfo(){
-  var date=document.getElementById('supp-date').value;
-  var period=document.getElementById('supp-period').value;
-  var info=document.getElementById('supp-info');
-  if(!date||!period){ info.style.display='none'; return; }
-  var existing=getLocal().filter(function(r){ return r.dateStr===date&&r.period===period; });
-  info.style.display='block';
-  info.textContent = existing.length
-    ? date+' '+period+' 目前已有 '+existing.length+' 班（'+existing.map(function(r){return r.className;}).join('、')+'）'
-    : date+' '+period+' 尚無紀錄';
-}
-
-function submitSupp(){
-  var date=document.getElementById('supp-date').value;
-  var period=document.getElementById('supp-period').value;
-  var className=document.getElementById('supp-class').value.trim();
-  var patroller=document.getElementById('supp-patroller').value.trim();
-  if(!date||!period||!className||!patroller){ showToast('⚠ 請填寫日期、節次、班級與姓名','#dc2626'); return; }
-  var viols=[];
-  document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ viols.push(c.dataset.code); });
-  var parts=date.split('/');
-  var rec={
-    id:Date.now()+Math.random(), ts:new Date().toISOString(),
-    dateStr:date, year:parts[0]||'', month:parts[1]||'', day:parts[2]||'',
-    period:period, className:className,
-    teacher:document.getElementById('supp-teacher').value.trim(),
-    patroller:patroller, dept:document.getElementById('supp-dept').value,
-    role:'補充', violations:viols, sleepCount:'', absentTime:'',
-    note:document.getElementById('supp-note').value.trim(),
-    photoDataUrl:'', photoName:'', hasPhoto:false, isSupp:true
-  };
-  // 處理照片
-  var photoInput=document.getElementById('supp-photo');
-  var file=photoInput.files[0];
-  function doSave(){
-    var arr=getLocal(); arr.unshift(rec); saveLocal(arr);
-    postRecord(rec);
-    showToast('✓ 已補充 '+className+' 的紀錄！');
-    document.getElementById('supp-class').value='';
-    document.getElementById('supp-teacher').value='';
-    document.getElementById('supp-note').value='';
-    photoInput.value='';
-    document.getElementById('supp-photo-img').src='';
-    document.getElementById('supp-photo-preview').style.display='none';
-    document.querySelectorAll('#supp-chips .supp-chip.selected').forEach(function(c){ c.classList.remove('selected'); });
-    updateSuppInfo();
-    renderAdmin();
-  }
-  if(file){
-    rec.photoName=file.name; rec.hasPhoto=true;
-    var reader=new FileReader();
-    reader.onload=function(e){ rec.photoDataUrl=e.target.result; doSave(); };
-    reader.readAsDataURL(file);
-  } else {
-    doSave();
-  }
-}
 
 function showToast(msg,bg){
   var t=document.getElementById('toast');
@@ -959,32 +758,6 @@ async function renderAdmin(){
   if(!filtered.length){ list.innerHTML='<div class="no-records"><div class="icon">📭</div>尚無紀錄</div>'; return; }
   list.innerHTML='';
   filtered.forEach(function(r,i){ list.appendChild(buildItem(r,i)); });
-
-  // 診斷：顯示照片儲存狀況
-  var diagEl=document.getElementById('photo-diag');
-  if(diagEl){
-    var photos=getPhotos();
-    var photoKeys=Object.keys(photos);
-    var recs=getLocal();
-    var recsWithPhoto=recs.filter(function(r){ return r.hasPhoto; });
-    var diagLines=[
-      '=== 照片診斷 ===',
-      'PHOTO_KEY 內有 '+photoKeys.length+' 筆照片',
-      'hasPhoto=true 的紀錄：'+recsWithPhoto.length+' 筆',
-      '',
-      'Photo keys:'
-    ];
-    photoKeys.forEach(function(k){ diagLines.push('  '+k+' → '+photos[k].substring(0,30)+'...'); });
-    diagLines.push('');
-    diagLines.push('Records with hasPhoto:');
-    recsWithPhoto.forEach(function(r){ 
-      var key=makePhotoKey(r);
-      var found=photos[key]?'✓ 找到':'✗ 找不到';
-      diagLines.push('  '+key+' → '+found);
-    });
-    diagEl.textContent=diagLines.join('\n');
-    diagEl.style.display=photoKeys.length>0||recsWithPhoto.length>0?'block':'none';
-  }
 }
 
 function buildItem(r,i){
@@ -1014,6 +787,12 @@ function buildItem(r,i){
   }
 
   // Notes
+  // 顯示照片連結
+  if(r.photoUrl){
+    var pa=document.createElement('a'); pa.className='photo-link'; pa.href=r.photoUrl; pa.target='_blank'; pa.textContent='📷 查看照片（Google Drive）';
+    item.appendChild(pa);
+  }
+
   var notes=[];
   if(r.sleepCount) notes.push('睡覺約'+r.sleepCount+'人');
   if(r.absentTime) notes.push('老師：'+r.absentTime);
@@ -1021,24 +800,7 @@ function buildItem(r,i){
   if(notes.length){ var nd=document.createElement('div'); nd.style.cssText='font-size:12px;color:var(--text2);margin-top:4px'; nd.textContent=notes.join('｜'); item.appendChild(nd); }
 
   // 照片顯示：優先用 base64 預覽，其次用 photoUrl 連結
-  var localPhoto=getPhotoFor(r);
-  if(localPhoto){
-    var thumb=document.createElement('div'); thumb.className='photo-thumb-admin';
-    var img=document.createElement('img'); img.src=localPhoto; img.alt='巡堂照片';
-    thumb.appendChild(img);
-    if(r.photoUrl){
-      var pl=document.createElement('a'); pl.className='photo-link'; pl.href=r.photoUrl; pl.target='_blank'; pl.textContent='↗ 在 Google Drive 開啟';
-      thumb.appendChild(pl);
-    }
-    item.appendChild(thumb);
-  } else if(r.photoUrl){
-    var pa=document.createElement('a'); pa.className='photo-link'; pa.href=r.photoUrl; pa.target='_blank'; pa.textContent='📷 查看照片（Google Drive）';
-    item.appendChild(pa);
-  } else if(r.hasPhoto){
-    var pn=document.createElement('div'); pn.style.cssText='font-size:12px;color:var(--color-text-secondary);margin-top:6px';
-    pn.textContent='📷 照片已附（請在原填表裝置查看）';
-    item.appendChild(pn);
-  }
+
 
   // Buttons
   var btns=document.createElement('div'); btns.className='record-btns';
@@ -1316,10 +1078,10 @@ async function generateWordDoc(){
 
 function exportCSV(){
   var records=getLocal(); if(!records.length){ showToast('⚠ 尚無資料','#d97706'); return; }
-  var headers=['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','照片連結','送出時間'];
+  var headers=['日期','節次','班級','任課老師','處室','職稱','巡堂者','違規代號','睡覺人數','老師缺席說明','備註','是否補充','送出時間'];
   var rows=records.map(function(r){
     var v=Array.isArray(r.violations)?r.violations.join('+'):(r.violations||'');
-    return [r.dateStr,r.period,r.className,r.teacher,r.dept,r.role,r.patroller,v,r.sleepCount,r.absentTime,r.note,r.isSupp?'補充':'',r.hasPhoto?'有附照片（後台查看）':'',r.ts?new Date(r.ts).toLocaleString('zh-TW'):'']
+    return [r.dateStr,r.period,r.className,r.teacher,r.dept,r.role,r.patroller,v,r.sleepCount,r.absentTime,r.note,r.isSupp?'補充':'',r.ts?new Date(r.ts).toLocaleString('zh-TW'):'']
       .map(function(x){return '"'+String(x||'').replace(/"/g,'""')+'"';}).join(',');
   });
   var a=document.createElement('a');
